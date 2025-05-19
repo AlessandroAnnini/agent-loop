@@ -6,6 +6,7 @@
 
 ![Python](https://img.shields.io/badge/Python-3.8%2B-blue?logo=python)
 ![Anthropic](https://img.shields.io/badge/Anthropic-API-orange)
+![OpenAI](https://img.shields.io/badge/OpenAI-API-green?logo=openai)
 
 ## Tools
 
@@ -25,17 +26,18 @@
 
 ## Overview
 
-**Agent Loop** is a command-line AI assistant. It leverages Anthropic's Claude models and a suite of powerful tools to automate, inspect, and manage your development environment—while keeping you in control with optional human confirmation for every action.
+**Agent Loop** is a command-line AI assistant. It leverages Anthropic's Claude or OpenAI's GPT models and a suite of powerful tools to automate, inspect, and manage your development environment—while keeping you in control with optional human confirmation for every action.
 
 - **Human-in-the-Loop:** Add `--safe` to require confirmation before any tool runs.
 - **Functional Programming:** Clean, composable, and testable code.
 - **DevOps Ready:** Integrates with Bash, Python, Docker, Git, Kubernetes, AWS, and more.
+- **Multi-Provider:** Supports both Anthropic Claude and OpenAI GPT models.
 
 ---
 
 ## Features
 
-- Conversational AI agent powered by Anthropic Claude
+- Conversational AI agent powered by Anthropic Claude or OpenAI GPT
 - Tool execution with optional human confirmation (`--safe` mode)
 - Debug mode for transparency (`--debug`)
 - Modular, extensible tool system
@@ -76,12 +78,35 @@
    pip install -r requirements.txt
    ```
 
+3. **Set up API keys:**
+
+   Create a `.env` file with either or both of the following API keys:
+
+   ```
+   ANTHROPIC_API_KEY=your_anthropic_api_key
+   OPENAI_API_KEY=your_openai_api_key
+   ```
+
+   If both are set, Anthropic Claude will be used by default.
+
 ## Usage
 
 ### Basic
 
 ```sh
 python main.py
+```
+
+### Model Selection
+
+```sh
+python main.py --model gpt-4o
+```
+
+or
+
+```sh
+python main.py --model claude-3-7-sonnet-latest
 ```
 
 ### Safe Mode (Human Confirmation)
