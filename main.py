@@ -1,10 +1,11 @@
 #!/usr/bin/env -S uv run --script
 # /// script
-# dependencies = ["anthropic>=0.45.0"]
+# dependencies = ["anthropic>=0.45.0", "openai>=1.0.0"]
 # ///
 import os
 from typing import Dict, List
-import anthropic
+from providers.anthropic import create_anthropic_llm
+from providers.openai import create_openai_llm
 from tools import TOOLS, TOOL_HANDLERS
 import argparse
 from halo import Halo
@@ -19,48 +20,22 @@ def user_input() -> List[Dict]:
 
 
 def create_llm(model: str):
-    if "ANTHROPIC_API_KEY" not in os.environ:
-        raise EnvironmentError("ANTHROPIC_API_KEY not set.")
+    anthropic_key = os.getenv("ANTHROPIC_API_KEY")
+    openai_key = os.getenv("OPENAI_API_KEY")
 
-    client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
-    messages = []
-
-    def call_llm(content):
-        messages.append({"role": "user", "content": content})
-        content[-1]["cache_control"] = {"type": "ephemeral"}
-
-        if not os.path.exists("SYSTEM_PROMPT.txt"):
-            raise FileNotFoundError("SYSTEM_PROMPT.txt does not exist.")
-
-        with open("SYSTEM_PROMPT.txt", "r") as f:
-            system_prompt = f.read()
-
-        response = client.messages.create(
-            model=model,
-            system=system_prompt,
-            max_tokens=20_000,
-            messages=messages,
-            tools=TOOLS,
+    # Check available API keys and select provider
+    if anthropic_key:
+        # Use Anthropic if its key is available (priority)
+        return create_anthropic_llm(model, anthropic_key)
+    elif openai_key:
+        # Fallback to OpenAI if only its key is available
+        return create_openai_llm(model, openai_key)
+    else:
+        # No API keys available
+        raise EnvironmentError(
+            "No API keys found. Please set either ANTHROPIC_API_KEY or OPENAI_API_KEY "
+            "environment variables. If both are set, ANTHROPIC_API_KEY will be used."
         )
-
-        del content[-1]["cache_control"]
-
-        output, tool_calls = "", []
-        assistant_content = {"role": "assistant", "content": []}
-        for part in response.content:
-            if part.type == "text":
-                output += part.text
-                assistant_content["content"].append({"type": "text", "text": part.text})
-            elif part.type == "tool_use":
-                assistant_content["content"].append(part)
-                tool_calls.append(
-                    {"id": part.id, "name": part.name, "input": part.input}
-                )
-
-        messages.append(assistant_content)
-        return output, tool_calls
-
-    return call_llm
 
 
 def get_tool_description(tool_name: str) -> str:
@@ -125,11 +100,14 @@ def loop(llm_fn, debug: bool = False, safe: bool = False):
         finally:
             spinner.stop()
         print("Agent:", response)
-        msg = (
-            [handle_tool_call(tc, debug=debug, safe=safe) for tc in tool_calls]
-            if tool_calls
-            else user_input()
-        )
+
+        if tool_calls:
+            tool_results = [
+                handle_tool_call(tc, debug=debug, safe=safe) for tc in tool_calls
+            ]
+            msg = tool_results
+        else:
+            msg = user_input()
 
 
 def main():
@@ -140,9 +118,25 @@ def main():
         action="store_true",
         help="Require confirmation before executing tools",
     )
+    parser.add_argument(
+        "--model",
+        type=str,
+        help="Model to use (defaults to claude-3-7-sonnet-latest for Anthropic, gpt-4o for OpenAI)",
+    )
     args = parser.parse_args()
+
+    # Determine which API to use and select appropriate default model
+    if os.getenv("ANTHROPIC_API_KEY"):
+        default_model = "claude-3-7-sonnet-latest"
+    elif os.getenv("OPENAI_API_KEY"):
+        default_model = "gpt-4o"
+    else:
+        default_model = "claude-3-7-sonnet-latest"  # Will fail with error message
+
+    model = args.model or default_model
+
     try:
-        loop(create_llm("claude-3-7-sonnet-latest"), debug=args.debug, safe=args.safe)
+        loop(create_llm(model), debug=args.debug, safe=args.safe)
     except KeyboardInterrupt:
         print("\nInterrupted. Goodbye!")
 
