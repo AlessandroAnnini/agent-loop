@@ -111,7 +111,7 @@ python main.py --safe --debug
 ## Example Session
 
 ```bash
-You: List all Docker containers
+dev@agent-loop:~$ List all Docker containers
 Agent: I will use the docker tool to list all containers.
 [CONFIRMATION REQUIRED]
 Tool: docker
