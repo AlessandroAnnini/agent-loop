@@ -1,0 +1,7 @@
+.env
+.venv
+__pycache__
+
+main_old.py
+first_main_script.py
+MCP.json
