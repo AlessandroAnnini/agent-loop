@@ -7,6 +7,20 @@
 ![Python](https://img.shields.io/badge/Python-3.8%2B-blue?logo=python)
 ![Anthropic](https://img.shields.io/badge/Anthropic-API-orange)
 
+### Tools
+
+![Bash](https://img.shields.io/badge/Tool-Bash-black?logo=gnu-bash)
+![Python](https://img.shields.io/badge/Tool-Python-3776AB?logo=python)
+![Curl](https://img.shields.io/badge/Tool-Curl-073551?logo=curl)
+![Git](https://img.shields.io/badge/Tool-Git-F05032?logo=git)
+![Docker](https://img.shields.io/badge/Tool-Docker-2496ED?logo=docker)
+![Project Inspector](https://img.shields.io/badge/Tool-Project_Inspector-lightgrey)
+![Kubectl](https://img.shields.io/badge/Tool-Kubectl-326CE5?logo=kubernetes)
+![AWS CLI](https://img.shields.io/badge/Tool-AWS_CLI-232F3E?logo=amazon-aws)
+![Jira](https://img.shields.io/badge/Tool-Jira-0052CC?logo=jira)
+![Confluence](https://img.shields.io/badge/Tool-Confluence-172B4D?logo=confluence)
+![Home Assistant](https://img.shields.io/badge/Tool-Home_Assistant-41BDF5?logo=home-assistant)
+
 ---
 
 ## Overview
@@ -43,6 +57,7 @@
 | **aws_cli**           | Run AWS CLI v2 read-only commands to interact with AWS services |
 | **jira**              | Query JIRA via REST API using safe, read-only endpoints         |
 | **confluence**        | Query Atlassian Confluence Cloud via REST API (read-only)       |
+| **home_assistant**    | Control and query devices in your Home Assistant setup          |
 
 ---
 
