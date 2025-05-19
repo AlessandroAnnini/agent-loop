@@ -5,6 +5,7 @@
 ---
 
 ![Python](https://img.shields.io/badge/Python-3.8%2B-blue?logo=python)
+![uv](https://img.shields.io/badge/uv-Package_Manager-7c4dff)
 ![Anthropic](https://img.shields.io/badge/Anthropic-API-orange)
 ![OpenAI](https://img.shields.io/badge/OpenAI-API-green?logo=openai)
 
@@ -76,8 +77,16 @@ See [Creating Tools Guide](CREATING_TOOLS.md) for instructions on how to create 
 
 2. **Install dependencies:**
 
+   Using [uv](https://astral.sh/uv), a much faster Python package manager:
+
    ```sh
-   pip install -r requirements.txt
+   uv pip install -r requirements.txt
+   ```
+
+   If you don't have uv installed, you can install it with:
+
+   ```sh
+   curl -LsSf https://astral.sh/uv/install.sh | sh
    ```
 
 3. **Set up API keys:**

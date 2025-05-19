@@ -1,5 +1,0 @@
-anthropic
-python-dotenv
-requests
-halo
-openai
