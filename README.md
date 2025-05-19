@@ -6,7 +6,6 @@
 
 ![Python](https://img.shields.io/badge/Python-3.8%2B-blue?logo=python)
 ![Anthropic](https://img.shields.io/badge/Anthropic-API-orange)
-![Functional](https://img.shields.io/badge/Functional%20Programming-✓-purple)
 
 ---
 
