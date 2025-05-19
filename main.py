@@ -11,7 +11,7 @@ from halo import Halo
 
 
 def user_input() -> List[Dict]:
-    x = input("\nYou: ")
+    x = input("\ndev@agent-loop:~$ ")
     if x.lower() in {"exit", "quit"}:
         print("Goodbye!")
         raise SystemExit
