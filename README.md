@@ -61,6 +61,8 @@
 | **confluence**        | Query Atlassian Confluence Cloud via REST API (read-only)       |
 | **home_assistant**    | Control and query devices in your Home Assistant setup          |
 
+See [Creating Tools Guide](CREATING_TOOLS.md) for instructions on how to create your own tools.
+
 ---
 
 ## Installation
@@ -82,7 +84,7 @@
 
    Create a `.env` file with either or both of the following API keys:
 
-   ```
+   ```text
    ANTHROPIC_API_KEY=your_anthropic_api_key
    OPENAI_API_KEY=your_openai_api_key
    ```
