@@ -9,7 +9,7 @@ from . import (
     aws_cli,
     jira,
     confluence,
-    home_assistant,
+    json,
 )
 
 TOOLS = [
@@ -23,7 +23,7 @@ TOOLS = [
     aws_cli.tool_definition,
     jira.tool_definition,
     confluence.tool_definition,
-    home_assistant.tool_definition,
+    json.tool_definition,
 ]
 
 TOOL_HANDLERS = {
@@ -37,5 +37,5 @@ TOOL_HANDLERS = {
     "aws_cli": aws_cli.handle_tool_call,
     "jira": jira.handle_tool_call,
     "confluence": confluence.handle_tool_call,
-    "home_assistant": home_assistant.handle_tool_call,
+    "json": json.handle_tool_call,
 }
