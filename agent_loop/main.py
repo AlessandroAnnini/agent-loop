@@ -4,11 +4,14 @@
 # ///
 import os
 from typing import Dict, List
-from providers.anthropic import create_anthropic_llm
-from providers.openai import create_openai_llm
-from tools import TOOLS, TOOL_HANDLERS
+from agent_loop.providers.anthropic import create_anthropic_llm
+from agent_loop.providers.openai import create_openai_llm
+from agent_loop.tools import TOOLS, TOOL_HANDLERS
 import argparse
 from halo import Halo
+from dotenv import load_dotenv
+
+load_dotenv(dotenv_path=os.path.expanduser("~/.config/agent-loop/.env"))
 
 
 def user_input() -> List[Dict]:

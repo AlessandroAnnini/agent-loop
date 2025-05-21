@@ -1,7 +1,7 @@
-import os
 import openai
-from tools import TOOLS
+from agent_loop.tools import TOOLS
 import json
+from agent_loop.utils import load_system_prompt
 
 
 def create_openai_llm(model: str, api_key: str):
@@ -33,9 +33,7 @@ def create_openai_llm(model: str, api_key: str):
             # Add user message directly in OpenAI format
             messages.append({"role": "user", "content": content})
 
-        # Read system prompt
-        with open("SYSTEM_PROMPT.txt", "r") as f:
-            system_prompt = f.read()
+        system_prompt = load_system_prompt()
 
         # Prepare messages for OpenAI
         openai_messages = [{"role": "system", "content": system_prompt}] + messages

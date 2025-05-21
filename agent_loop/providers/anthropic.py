@@ -1,6 +1,6 @@
-import os
 import anthropic
-from tools import TOOLS
+from agent_loop.tools import TOOLS
+from agent_loop.utils import load_system_prompt
 
 
 def create_anthropic_llm(model: str, api_key: str):
@@ -11,11 +11,7 @@ def create_anthropic_llm(model: str, api_key: str):
         messages.append({"role": "user", "content": content})
         content[-1]["cache_control"] = {"type": "ephemeral"}
 
-        if not os.path.exists("SYSTEM_PROMPT.txt"):
-            raise FileNotFoundError("SYSTEM_PROMPT.txt does not exist.")
-
-        with open("SYSTEM_PROMPT.txt", "r") as f:
-            system_prompt = f.read()
+        system_prompt = load_system_prompt()
 
         response = client.messages.create(
             model=model,

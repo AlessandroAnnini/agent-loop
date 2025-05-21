@@ -3,7 +3,7 @@ import requests
 from dotenv import load_dotenv
 
 # Load credentials once
-load_dotenv()
+load_dotenv(dotenv_path=os.path.expanduser("~/.config/agent-loop/.env"))
 
 CONFLUENCE_BASE_URL = os.getenv("CONFLUENCE_BASE_URL")
 CONFLUENCE_EMAIL = os.getenv("CONFLUENCE_EMAIL")

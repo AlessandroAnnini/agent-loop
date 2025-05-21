@@ -3,7 +3,7 @@ import requests
 from dotenv import load_dotenv
 
 # Load .env once at module level
-load_dotenv()
+load_dotenv(dotenv_path=os.path.expanduser("~/.config/agent-loop/.env"))
 
 JIRA_BASE_URL = os.getenv("JIRA_BASE_URL")
 JIRA_EMAIL = os.getenv("JIRA_EMAIL")

@@ -1,4 +1,4 @@
-from . import (
+from agent_loop.tools import (
     bash,
     python_eval,
     curl,
@@ -10,6 +10,10 @@ from . import (
     jira,
     confluence,
     json,
+    http,
+    filesystem,
+    node_eval,
+    sympy,
 )
 
 TOOLS = [
@@ -24,6 +28,10 @@ TOOLS = [
     jira.tool_definition,
     confluence.tool_definition,
     json.tool_definition,
+    http.tool_definition,
+    filesystem.tool_definition,
+    node_eval.tool_definition,
+    sympy.tool_definition,
 ]
 
 TOOL_HANDLERS = {
@@ -38,4 +46,8 @@ TOOL_HANDLERS = {
     "jira": jira.handle_tool_call,
     "confluence": confluence.handle_tool_call,
     "json": json.handle_tool_call,
+    "http": http.handle_tool_call,
+    "filesystem": filesystem.handle_tool_call,
+    "node": node_eval.handle_tool_call,
+    "sympy": sympy.handle_tool_call,
 }
