@@ -1,7 +1,8 @@
 [project]
 name = "agent-loop"
 version = "0.1.0"
-description = "Add your description here"
+description = "An AI Agent with optional Human-in-the-Loop Safety"
+authors = [{ name = "Alessandro Filippo Annini", email = "alessandro.annini@gmail.com" }]
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -10,4 +11,15 @@ dependencies = [
     "openai>=1.79.0",
     "python-dotenv>=1.1.0",
     "requests>=2.32.3",
+    "sympy>=1.14.0",
 ]
+
+[project.scripts]
+agent-loop = "agent_loop.main:main"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.package-data]
+"agent_loop" = ["SYSTEM_PROMPT.txt"]
