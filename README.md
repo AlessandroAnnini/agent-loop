@@ -13,6 +13,10 @@
 
 ![Bash](https://img.shields.io/badge/Tool-Bash-black?logo=gnu-bash)
 ![Python](https://img.shields.io/badge/Tool-Python-3776AB?logo=python)
+![Node.js](https://img.shields.io/badge/Tool-Node.js-339933?logo=node.js)
+![SymPy](https://img.shields.io/badge/Tool-SymPy-3B5526?logo=python)
+![Filesystem](https://img.shields.io/badge/Tool-Filesystem-4B275F)
+![HTTP](https://img.shields.io/badge/Tool-HTTP-0099E5?logo=http)
 ![Curl](https://img.shields.io/badge/Tool-Curl-073551?logo=curl)
 ![Git](https://img.shields.io/badge/Tool-Git-F05032?logo=git)
 ![Docker](https://img.shields.io/badge/Tool-Docker-2496ED?logo=docker)
@@ -21,9 +25,29 @@
 ![AWS CLI](https://img.shields.io/badge/Tool-AWS_CLI-232F3E?logo=amazon-aws)
 ![Jira](https://img.shields.io/badge/Tool-Jira-0052CC?logo=jira)
 ![Confluence](https://img.shields.io/badge/Tool-Confluence-172B4D?logo=confluence)
-![Home Assistant](https://img.shields.io/badge/Tool-Home_Assistant-41BDF5?logo=home-assistant)
 
 ---
+
+- [Agent Loop](#agent-loop)
+  - [Tools](#tools)
+  - [Overview](#overview)
+  - [Features](#features)
+  - [Available Tools](#available-tools)
+  - [Installation](#installation)
+    - [Option 1: Using the installation script (Recommended)](#option-1-using-the-installation-script-recommended)
+    - [Option 2: Manual installation](#option-2-manual-installation)
+    - [Uninstalling](#uninstalling)
+    - [Windows Subsystem for Linux (WSL) Installation](#windows-subsystem-for-linux-wsl-installation)
+  - [Configuration](#configuration)
+    - [API Keys and Environment Variables](#api-keys-and-environment-variables)
+    - [Custom System Prompt](#custom-system-prompt)
+  - [Usage](#usage)
+    - [Basic](#basic)
+    - [Model Selection](#model-selection)
+    - [Safe Mode (Human Confirmation)](#safe-mode-human-confirmation)
+    - [Debug Mode](#debug-mode)
+    - [Combined](#combined)
+  - [Example Session](#example-session)
 
 ## Overview
 
@@ -52,6 +76,10 @@
 | --------------------- | --------------------------------------------------------------- |
 | **bash**              | Execute bash commands                                           |
 | **python**            | Evaluate Python code in a sandboxed subprocess                  |
+| **node**              | Evaluate Node.js code in a sandboxed subprocess                 |
+| **sympy**             | Perform symbolic mathematics operations using SymPy             |
+| **filesystem**        | Read, create, update, append, delete files with UTF-8 encoding  |
+| **http**              | Make HTTP requests using HTTPie with easy JSON handling         |
 | **curl**              | Make HTTP requests using curl                                   |
 | **git**               | Run Git commands in the current repository                      |
 | **docker**            | Run Docker CLI commands                                         |
@@ -60,13 +88,43 @@
 | **aws_cli**           | Run AWS CLI v2 read-only commands to interact with AWS services |
 | **jira**              | Query JIRA via REST API using safe, read-only endpoints         |
 | **confluence**        | Query Atlassian Confluence Cloud via REST API (read-only)       |
-| **home_assistant**    | Control and query devices in your Home Assistant setup          |
 
 See [Creating Tools Guide](CREATING_TOOLS.md) for instructions on how to create your own tools.
 
 ---
 
 ## Installation
+
+### Option 1: Using the installation script (Recommended)
+
+1. **Download the installation package:**
+
+   ```sh
+   git clone https://github.com/your-org/agent-loop.git
+   cd agent-loop
+   ```
+
+2. **Run the installation script:**
+
+   ```sh
+   ./install.sh
+   ```
+
+   This script will:
+
+   - Create a virtual environment at `~/.local/share/agent-loop/venv`
+   - Install all required dependencies
+   - Install the agent-loop package
+   - Create a command wrapper at `~/.local/bin/agent-loop`
+
+3. **Add to your PATH (if needed):**
+
+   ```sh
+   echo 'export PATH="$PATH:$HOME/.local/bin"' >> ~/.bashrc
+   source ~/.bashrc
+   ```
+
+### Option 2: Manual installation
 
 1. **Clone the repository:**
 
@@ -89,41 +147,125 @@ See [Creating Tools Guide](CREATING_TOOLS.md) for instructions on how to create 
    curl -LsSf https://astral.sh/uv/install.sh | sh
    ```
 
-3. **Set up API keys:**
+### Uninstalling
 
-   Create a `.env` file with either or both of the following API keys:
+To uninstall Agent Loop, simply run:
 
-   ```text
-   ANTHROPIC_API_KEY=your_anthropic_api_key
-   OPENAI_API_KEY=your_openai_api_key
-   ```
+```sh
+./install.sh uninstall
+```
 
-   If both are set, Anthropic Claude will be used by default.
+This will remove the command wrapper and the virtual environment.
+
+### Windows Subsystem for Linux (WSL) Installation
+
+Agent Loop works great on Windows through WSL. Here's how to set it up:
+
+1. **Install WSL if you don't have it already**:
+
+   - Open PowerShell as Administrator and run:
+
+     ```powershell
+     wsl --install
+     ```
+
+   - Restart your computer after installation completes
+   - For detailed instructions, see [Microsoft's WSL installation guide](https://docs.microsoft.com/en-us/windows/wsl/install)
+
+2. **Install Agent Loop in WSL**:
+
+   - Open your WSL terminal
+   - Follow the same installation instructions as above:
+
+     ```sh
+     git clone https://github.com/your-org/agent-loop.git
+     cd agent-loop
+     ./install.sh
+     ```
+
+3. **Configuration in WSL**:
+
+   - Create the config directory in your WSL home:
+
+     ```sh
+     mkdir -p ~/.config/agent-loop
+     ```
+
+   - Add your API keys to `.env` file:
+
+     ```sh
+     nano ~/.config/agent-loop/.env
+     ```
+
+   - Optional: Add a custom system prompt:
+
+     ```sh
+     nano ~/.config/agent-loop/SYSTEM_PROMPT.txt
+     ```
+
+4. **WSL-specific considerations**:
+   - The agent-loop can access both Linux and Windows files
+   - Windows files are mounted at `/mnt/c/`, `/mnt/d/`, etc.
+   - To access Windows directories, use paths like `/mnt/c/Users/YourName/Documents`
+   - For best performance, keep your projects within the WSL filesystem
+
+## Configuration
+
+### API Keys and Environment Variables
+
+Create a `.env` file in the `~/.config/agent-loop` directory with your API keys and other configuration:
+
+```sh
+# Create the config directory if it doesn't exist
+mkdir -p ~/.config/agent-loop
+
+# Create your .env file
+nano ~/.config/agent-loop/.env
+```
+
+You can use the `.env.example` file from the source repository as a template. At minimum, include one of these API keys:
+
+```text
+ANTHROPIC_API_KEY=your_anthropic_api_key
+OPENAI_API_KEY=your_openai_api_key
+```
+
+If both are set, Anthropic Claude will be used by default.
+
+### Custom System Prompt
+
+You can customize the system prompt by creating a `SYSTEM_PROMPT.txt` file in the same directory:
+
+```sh
+nano ~/.config/agent-loop/SYSTEM_PROMPT.txt
+```
+
+This allows you to give specific instructions or personality to the assistant. If this file doesn't exist, the default system prompt will be used.
 
 ## Usage
 
 ### Basic
 
 ```sh
-python main.py
+agent-loop
 ```
 
 ### Model Selection
 
 ```sh
-python main.py --model gpt-4o
+agent-loop --model gpt-4o
 ```
 
 or
 
 ```sh
-python main.py --model claude-3-7-sonnet-latest
+agent-loop --model claude-3-7-sonnet-latest
 ```
 
 ### Safe Mode (Human Confirmation)
 
 ```sh
-python main.py --safe
+agent-loop --safe
 ```
 
 - You will be shown each command and asked to confirm before execution.
@@ -131,7 +273,7 @@ python main.py --safe
 ### Debug Mode
 
 ```sh
-python main.py --debug
+agent-loop --debug
 ```
 
 - Prints tool input/output for transparency.
@@ -139,7 +281,7 @@ python main.py --debug
 ### Combined
 
 ```sh
-python main.py --safe --debug
+agent-loop --safe --debug
 ```
 
 ---
@@ -147,7 +289,8 @@ python main.py --safe --debug
 ## Example Session
 
 ```bash
-dev@agent-loop:~$ List all Docker containers
+dev@agent-loop:~$ agent-loop --safe
+> List all Docker containers
 Agent: I will use the docker tool to list all containers.
 [CONFIRMATION REQUIRED]
 Tool: docker
