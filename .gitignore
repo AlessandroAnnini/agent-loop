@@ -21,3 +21,6 @@ __pycache__/
 
 # Legacy files
 agent_loop/legacy/
+
+build
+agent_loop.egg-info
