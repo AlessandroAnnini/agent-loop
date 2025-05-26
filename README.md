@@ -226,11 +226,26 @@ nano ~/.config/agent-loop/.env
 You can use the `.env.example` file from the source repository as a template. At minimum, include one of these API keys:
 
 ```text
+# Anthropic
 ANTHROPIC_API_KEY=your_anthropic_api_key
+ANTHROPIC_MODEL=claude-3-7-sonnet-latest  # Optional, defaults to claude-3-7-sonnet-latest
+
+# OpenAI
 OPENAI_API_KEY=your_openai_api_key
+OPENAI_MODEL=gpt-4o  # Optional, defaults to gpt-4o
+
+# Jira (Optional)
+JIRA_BASE_URL=your_jira_instance_url
+JIRA_EMAIL=your_jira_email
+JIRA_API_TOKEN=your_jira_api_token
+
+# Confluence (Optional)
+CONFLUENCE_BASE_URL=your_confluence_instance_url
+CONFLUENCE_EMAIL=your_confluence_email
+CONFLUENCE_API_TOKEN=your_confluence_api_token
 ```
 
-If both are set, Anthropic Claude will be used by default.
+If both Anthropic and OpenAI API keys are set, Anthropic Claude will be used by default.
 
 ### Custom System Prompt
 
