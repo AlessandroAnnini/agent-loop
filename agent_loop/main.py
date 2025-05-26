@@ -22,17 +22,25 @@ def user_input() -> List[Dict]:
     return [{"type": "text", "text": x}]
 
 
-def create_llm(model: str):
+def create_llm():
     anthropic_key = os.getenv("ANTHROPIC_API_KEY")
+    anthropic_model = os.getenv("ANTHROPIC_MODEL", "claude-3-7-sonnet-latest")
     openai_key = os.getenv("OPENAI_API_KEY")
+    openai_model = os.getenv("OPENAI_MODEL", "gpt-4o")
+
+    if not anthropic_key and not openai_key:
+        raise EnvironmentError(
+            "No API keys found. Please set either ANTHROPIC_API_KEY or OPENAI_API_KEY "
+            "environment variables. If both are set, ANTHROPIC_API_KEY will be used."
+        )
 
     # Check available API keys and select provider
     if anthropic_key:
         # Use Anthropic if its key is available (priority)
-        return create_anthropic_llm(model, anthropic_key)
+        return create_anthropic_llm(anthropic_model, anthropic_key)
     elif openai_key:
         # Fallback to OpenAI if only its key is available
-        return create_openai_llm(model, openai_key)
+        return create_openai_llm(openai_model, openai_key)
     else:
         # No API keys available
         raise EnvironmentError(
@@ -121,25 +129,10 @@ def main():
         action="store_true",
         help="Require confirmation before executing tools",
     )
-    parser.add_argument(
-        "--model",
-        type=str,
-        help="Model to use (defaults to claude-3-7-sonnet-latest for Anthropic, gpt-4o for OpenAI)",
-    )
     args = parser.parse_args()
 
-    # Determine which API to use and select appropriate default model
-    if os.getenv("ANTHROPIC_API_KEY"):
-        default_model = "claude-3-7-sonnet-latest"
-    elif os.getenv("OPENAI_API_KEY"):
-        default_model = "gpt-4o"
-    else:
-        default_model = "claude-3-7-sonnet-latest"  # Will fail with error message
-
-    model = args.model or default_model
-
     try:
-        loop(create_llm(model), debug=args.debug, safe=args.safe)
+        loop(create_llm(), debug=args.debug, safe=args.safe)
     except KeyboardInterrupt:
         print("\nInterrupted. Goodbye!")
 
