@@ -5,6 +5,9 @@ env/
 venv/
 ENV/
 
+# exclude .env.example
+!.env.example
+
 # Python cache files
 __pycache__/
 *.py[cod]
