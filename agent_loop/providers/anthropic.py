@@ -7,6 +7,8 @@ def create_anthropic_llm(model: str, api_key: str):
     client = anthropic.Anthropic(api_key=api_key)
     messages = []
 
+    print(f"Using Anthropic model: {model}")
+
     def call_llm(content):
         messages.append({"role": "user", "content": content})
         content[-1]["cache_control"] = {"type": "ephemeral"}

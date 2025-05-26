@@ -8,6 +8,8 @@ def create_openai_llm(model: str, api_key: str):
     client = openai.OpenAI(api_key=api_key)
     messages = []
 
+    print(f"Using OpenAI model: {model}")
+
     def call_llm(content):
         # Add content to messages with standardized format
         if isinstance(content, list) and any(
