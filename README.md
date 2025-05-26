@@ -48,6 +48,7 @@
     - [Debug Mode](#debug-mode)
     - [Combined](#combined)
   - [Example Session](#example-session)
+  - [License](#license)
 
 ## Overview
 
@@ -315,3 +316,10 @@ Do you want to execute this command? [y/N]: y
 STDOUT:
 CONTAINER ID   IMAGE   ...
 ```
+
+## License
+
+This project is licensed under the GNU Affero General Public License v3.0,
+with additional terms prohibiting commercial use and requiring attribution.
+
+See [LICENSE](./LICENSE) for full details.
