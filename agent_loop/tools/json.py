@@ -1,7 +1,7 @@
 import json
 
 tool_definition = {
-    "name": "json_tool",
+    "name": "json",
     "description": "Validate and format JSON. Supports pretty-printing, minifying, and sorting keys.",
     "input_schema": {
         "type": "object",
