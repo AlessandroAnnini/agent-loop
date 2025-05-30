@@ -63,6 +63,7 @@ async def handle_tool_call(
 ) -> Dict:
     name = tool_call["name"]
     input_data = tool_call["input"]
+    print(f"[Agent] Calling tool: {name} | Input: {input_data}")
     if debug:
         print(f"\n[Tool: {name}] Input: {input_data}\n")
     if safe and not confirm_tool_execution(name, input_data):
@@ -113,7 +114,12 @@ async def loop(llm_fn, debug: bool = False, safe: bool = False):
 
 async def agent_main():
     async with AsyncExitStack() as exit_stack:
-        await mcp_manager.register_tools(exit_stack)
+        spinner = Halo(text="Loading MCP servers...", spinner="dots")
+        spinner.start()
+        try:
+            await mcp_manager.register_tools(exit_stack)
+        finally:
+            spinner.stop()
         parser = argparse.ArgumentParser(description="Agent Loop")
         parser.add_argument(
             "--debug", action="store_true", help="Show tool input/output"
