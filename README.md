@@ -30,31 +30,28 @@
 
 ---
 
-- [Agent Loop](#agent-loop)
-  - [Tools](#tools)
-  - [Overview](#overview)
-  - [Features](#features)
-  - [MCP (Model Context Protocol) Integration](#mcp-model-context-protocol-integration)
-    - [How it works](#how-it-works)
-    - [Example MCP config](#example-mcp-config)
-  - [Available Tools](#available-tools)
-  - [Installation](#installation)
-    - [Option 1: Using the installation script (Recommended)](#option-1-using-the-installation-script-recommended)
-    - [Option 2: Manual installation](#option-2-manual-installation)
-    - [Uninstalling](#uninstalling)
-    - [Windows Subsystem for Linux (WSL) Installation](#windows-subsystem-for-linux-wsl-installation)
-  - [Configuration](#configuration)
-    - [API Keys and Environment Variables](#api-keys-and-environment-variables)
-    - [Custom System Prompt](#custom-system-prompt)
-    - [MCP Server Configuration](#mcp-server-configuration)
-  - [Usage](#usage)
-    - [Basic](#basic)
-    - [Model Selection](#model-selection)
-    - [Safe Mode (Human Confirmation)](#safe-mode-human-confirmation)
-    - [Debug Mode](#debug-mode)
-    - [Combined](#combined)
-  - [Example Session](#example-session)
-  - [License](#license)
+## Requirements
+
+- **Python**: >= 3.12
+- **Core Python dependencies:**
+  - anthropic >= 0.51.0
+  - halo >= 0.0.31
+  - mcp[cli] >= 1.9.2
+  - openai >= 1.79.0
+  - python-dotenv >= 1.1.0
+  - requests >= 2.32.3
+  - sympy >= 1.14.0
+- **Recommended for installation:**
+  - [uv](https://astral.sh/uv) (for fast dependency installation)
+- **Optional/for full tool support:**
+  - Node.js (for some MCP server integrations, e.g., Brave Search, Obsidian)
+  - Docker, Git, AWS CLI, kubectl, etc. (for full tool support)
+- **Platform:**
+  - Linux, macOS, or Windows Subsystem for Linux (WSL)
+- **API Keys (for full functionality):**
+  - Anthropic API key (for Claude models)
+  - OpenAI API key (for GPT models)
+  - (Optional) Jira and Confluence API keys for those integrations
 
 ## Overview
 
