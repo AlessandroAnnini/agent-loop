@@ -43,7 +43,7 @@ def is_safe_azure_command(cmd: list) -> bool:
     )
 
 
-def handle_tool_call(input_data):
+def handle_call(input_data):
     args = input_data["args"]
     cmd = ["az"] + args.strip().split()
 

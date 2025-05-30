@@ -31,7 +31,7 @@ tool_definition = {
 }
 
 
-def handle_tool_call(input_data):
+def handle_call(input_data):
     if not all([CONFLUENCE_BASE_URL, CONFLUENCE_EMAIL, CONFLUENCE_API_TOKEN]):
         return "Missing Confluence credentials. Please set CONFLUENCE_BASE_URL, CONFLUENCE_EMAIL, and CONFLUENCE_API_TOKEN in your .env file."
 

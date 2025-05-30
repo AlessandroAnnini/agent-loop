@@ -36,7 +36,7 @@ tool_definition = {
 }
 
 
-def handle_tool_call(input_data):
+def handle_call(input_data):
     operation = input_data["operation"]
     path = input_data["path"]
     content = input_data.get("content", "")

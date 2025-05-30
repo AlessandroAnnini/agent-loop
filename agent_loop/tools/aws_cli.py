@@ -44,7 +44,7 @@ def is_safe_aws_command(cmd: list) -> bool:
     )
 
 
-def handle_tool_call(input_data):
+def handle_call(input_data):
     args = input_data["args"]
     cmd = ["aws"] + args.strip().split()
 

@@ -13,7 +13,7 @@ tool_definition = {
 }
 
 
-def handle_tool_call(input_data):
+def handle_call(input_data):
     command = input_data["command"]
     try:
         result = subprocess.run(

@@ -15,7 +15,7 @@ tool_definition = {
 }
 
 
-def handle_tool_call(input_data):
+def handle_call(input_data):
     code = input_data["code"]
 
     try:
