@@ -1,6 +1,6 @@
 # Agent Loop
 
-> **An AI Agent with optional Human-in-the-Loop Safety**
+> **An AI Agent with optional Human-in-the-Loop Safety and Model Context Protocol (MCP) integration**
 
 ---
 
@@ -8,6 +8,8 @@
 ![uv](https://img.shields.io/badge/uv-Package_Manager-7c4dff)
 ![Anthropic](https://img.shields.io/badge/Anthropic-API-orange)
 ![OpenAI](https://img.shields.io/badge/OpenAI-API-green?logo=openai)
+![MCP](https://img.shields.io/badge/Tool-MCP-4B8BBE?logo=protocols)
+**![Version](https://img.shields.io/badge/version-2.0.0-blue)**
 
 ## Tools
 
@@ -32,6 +34,9 @@
   - [Tools](#tools)
   - [Overview](#overview)
   - [Features](#features)
+  - [MCP (Model Context Protocol) Integration](#mcp-model-context-protocol-integration)
+    - [How it works](#how-it-works)
+    - [Example MCP config](#example-mcp-config)
   - [Available Tools](#available-tools)
   - [Installation](#installation)
     - [Option 1: Using the installation script (Recommended)](#option-1-using-the-installation-script-recommended)
@@ -41,6 +46,7 @@
   - [Configuration](#configuration)
     - [API Keys and Environment Variables](#api-keys-and-environment-variables)
     - [Custom System Prompt](#custom-system-prompt)
+    - [MCP Server Configuration](#mcp-server-configuration)
   - [Usage](#usage)
     - [Basic](#basic)
     - [Model Selection](#model-selection)
@@ -58,6 +64,7 @@
 - **Functional Programming:** Clean, composable, and testable code.
 - **DevOps Ready:** Integrates with Bash, Python, Docker, Git, Kubernetes, AWS, and more.
 - **Multi-Provider:** Supports both Anthropic Claude and OpenAI GPT models.
+- **MCP Integration:** Dynamically loads and uses tools/services from any MCP-compatible server (see below).
 
 ---
 
@@ -68,6 +75,52 @@
 - Debug mode for transparency (`--debug`)
 - Modular, extensible tool system
 - Functional programming style throughout
+- **MCP (Model Context Protocol) integration for external tool/service discovery and use**
+
+---
+
+## MCP (Model Context Protocol) Integration
+
+**New in v2.0!**
+
+Agent Loop can now connect to any number of MCP-compatible servers, dynamically discovering and using their services as tools. This means you can:
+
+- Add new capabilities (search, knowledge, automation, etc.) by simply running or configuring an MCP server.
+- Use tools from remote or local MCP servers as if they were built-in.
+- Aggregate services from multiple sources (e.g., Brave Search, Obsidian, custom servers) in one agent.
+
+> **ℹ️ The MCP server configuration format is identical to that used by [Cursor AI IDE](https://docs.cursor.com/context/model-context-protocol#configuring-mcp-servers).**
+> See the [Cursor MCP documentation](https://docs.cursor.com/context/model-context-protocol#configuring-mcp-servers) for more details and advanced options.
+
+### How it works
+
+- On startup, Agent Loop reads your MCP server configuration from `~/.config/agent-loop/mcp.json`.
+- For each server, it starts a session and lists available services.
+- Each service is registered as a tool (named `<server>-<service>`) and can be called by the agent or user.
+- All MCP tools are available alongside built-in tools.
+
+### Example MCP config
+
+```json
+{
+  "mcpServers": {
+    "brave-search": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-brave-search"],
+      "env": { "BRAVE_API_KEY": "..." }
+    },
+    "mcp-obsidian": {
+      "command": "npx",
+      "args": ["-y", "mcp-obsidian", "/path/to/obsidian-vault/"]
+    }
+  }
+}
+```
+
+- Place this file at `~/.config/agent-loop/mcp.json`.
+- Each server can be a local or remote MCP-compatible service.
+- All services/tools from these servers will be available in your agent session.
+- For more details, see the [Cursor MCP documentation](https://docs.cursor.com/context/model-context-protocol#configuring-mcp-servers).
 
 ---
 
@@ -89,6 +142,7 @@
 | **aws_cli**           | Run AWS CLI v2 read-only commands to interact with AWS services |
 | **jira**              | Query JIRA via REST API using safe, read-only endpoints         |
 | **confluence**        | Query Atlassian Confluence Cloud via REST API (read-only)       |
+| **MCP**               | All services from configured MCP servers (see above)            |
 
 See [Creating Tools Guide](CREATING_TOOLS.md) for instructions on how to create your own tools.
 
@@ -257,6 +311,10 @@ nano ~/.config/agent-loop/SYSTEM_PROMPT.txt
 ```
 
 This allows you to give specific instructions or personality to the assistant. If this file doesn't exist, the default system prompt will be used.
+
+### MCP Server Configuration
+
+To enable MCP integration, create a file at `~/.config/agent-loop/mcp.json` as shown above. Each server entry should specify the command, arguments, and any required environment variables. All services from these servers will be available as tools in your agent session.
 
 ## Usage
 
