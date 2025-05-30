@@ -11,7 +11,7 @@ import argparse
 from halo import Halo
 from dotenv import load_dotenv
 import asyncio
-from contextlib import AsyncExitStack
+from contextlib import AsyncExitStack, suppress
 from agent_loop.mcp_client import MCPManager
 import inspect
 
@@ -113,31 +113,37 @@ async def loop(llm_fn, debug: bool = False, safe: bool = False):
 
 
 async def agent_main():
-    async with AsyncExitStack() as exit_stack:
-        spinner = Halo(text="Loading MCP servers...", spinner="dots")
-        spinner.start()
-        try:
-            await mcp_manager.register_tools(exit_stack)
-        finally:
-            spinner.stop()
-        parser = argparse.ArgumentParser(description="Agent Loop")
-        parser.add_argument(
-            "--debug", action="store_true", help="Show tool input/output"
-        )
-        parser.add_argument(
-            "--safe",
-            action="store_true",
-            help="Require confirmation before executing tools",
-        )
-        args = parser.parse_args()
-        try:
-            await loop(create_llm(), debug=args.debug, safe=args.safe)
-        except KeyboardInterrupt:
-            print("\nInterrupted. Goodbye!")
+    try:
+        async with AsyncExitStack() as exit_stack:
+            spinner = Halo(text="Loading MCP servers...", spinner="dots")
+            spinner.start()
+            try:
+                await mcp_manager.register_tools(exit_stack)
+            finally:
+                spinner.stop()
+            parser = argparse.ArgumentParser(description="Agent Loop")
+            parser.add_argument(
+                "--debug", action="store_true", help="Show tool input/output"
+            )
+            parser.add_argument(
+                "--safe",
+                action="store_true",
+                help="Require confirmation before executing tools",
+            )
+            args = parser.parse_args()
+            try:
+                await loop(create_llm(), debug=args.debug, safe=args.safe)
+            except KeyboardInterrupt:
+                print("\nInterrupted. Goodbye!")
+    except asyncio.CancelledError:
+        pass
 
 
 def main():
-    asyncio.run(agent_main())
+    try:
+        asyncio.run(agent_main())
+    except KeyboardInterrupt:
+        print("\nInterrupted. Goodbye!")
 
 
 if __name__ == "__main__":
