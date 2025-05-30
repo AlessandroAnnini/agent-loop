@@ -1,6 +1,6 @@
 [project]
 name = "agent-loop"
-version = "0.1.0"
+version = "1.0.0"
 description = "An AI Agent with optional Human-in-the-Loop Safety"
 authors = [{ name = "Alessandro Filippo Annini", email = "alessandro.annini@gmail.com" }]
 readme = "README.md"
