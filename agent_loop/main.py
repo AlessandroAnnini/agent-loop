@@ -23,7 +23,7 @@ mcp_manager = MCPManager()
 def user_input() -> List[Dict]:
     x = input("\ndev@agent-loop:~$ ")
     if x.lower() in {"exit", "quit"}:
-        print("Goodbye!")
+        print("👋 Goodbye!")
         raise SystemExit
     return [{"type": "text", "text": x}]
 
@@ -52,7 +52,7 @@ def get_tool_description(tool_name: str) -> str:
 def confirm_tool_execution(tool_name: str, input_data: Dict) -> bool:
     description = get_tool_description(tool_name)
     print(
-        f"\n[CONFIRMATION REQUIRED]\nTool: {tool_name}\nDescription: {description}\nInput: {input_data}"
+        f"\n⚠️ [CONFIRMATION REQUIRED]\nTool: {tool_name}\nDescription: {description}\nInput: {input_data}"
     )
     answer = input("Do you want to execute this command? [y/N]: ").strip().lower()
     return answer in {"y", "yes"}
@@ -63,7 +63,7 @@ async def handle_tool_call(
 ) -> Dict:
     name = tool_call["name"]
     input_data = tool_call["input"]
-    print(f"[Agent] Calling tool: {name} | Input: {input_data}")
+    print(f"🛠️ [Agent] Calling tool: {name} | Input: {input_data}")
     if debug:
         print(f"\n[Tool: {name}] Input: {input_data}\n")
     if safe and not confirm_tool_execution(name, input_data):
@@ -73,7 +73,7 @@ async def handle_tool_call(
             "content": [
                 {
                     "type": "text",
-                    "text": f"[SKIPPED] {name} command was not executed by user request.",
+                    "text": f"⚠️ [SKIPPED] {name} command was not executed by user request.",
                 },
             ],
         }
@@ -102,7 +102,7 @@ async def loop(llm_fn, debug: bool = False, safe: bool = False):
             response, tool_calls = llm_fn(msg)
         finally:
             spinner.stop()
-        print("Agent:", response)
+        print(f"💬 Agent: {response}")
         if tool_calls:
             tool_results = [
                 await handle_tool_call(tc, debug=debug, safe=safe) for tc in tool_calls
@@ -115,12 +115,6 @@ async def loop(llm_fn, debug: bool = False, safe: bool = False):
 async def agent_main():
     try:
         async with AsyncExitStack() as exit_stack:
-            spinner = Halo(text="Loading MCP servers...", spinner="dots")
-            spinner.start()
-            try:
-                await mcp_manager.register_tools(exit_stack)
-            finally:
-                spinner.stop()
             parser = argparse.ArgumentParser(description="Agent Loop")
             parser.add_argument(
                 "--debug", action="store_true", help="Show tool input/output"
@@ -131,10 +125,16 @@ async def agent_main():
                 help="Require confirmation before executing tools",
             )
             args = parser.parse_args()
+            spinner = Halo(text="Loading MCP servers...", spinner="dots")
+            spinner.start()
+            try:
+                await mcp_manager.register_tools(exit_stack, debug=args.debug)
+            finally:
+                spinner.stop()
             try:
                 await loop(create_llm(), debug=args.debug, safe=args.safe)
             except KeyboardInterrupt:
-                print("\nInterrupted. Goodbye!")
+                print("\n👋 Interrupted. Goodbye!")
     except asyncio.CancelledError:
         pass
 
@@ -143,7 +143,7 @@ def main():
     try:
         asyncio.run(agent_main())
     except KeyboardInterrupt:
-        print("\nInterrupted. Goodbye!")
+        print("\n👋 Interrupted. Goodbye!")
 
 
 if __name__ == "__main__":

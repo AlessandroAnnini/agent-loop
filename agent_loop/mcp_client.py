@@ -11,8 +11,9 @@ CONFIG_PATH = os.path.expanduser("~/.config/agent-loop/mcp.json")
 
 
 class MCPManager:
-    def __init__(self):
+    def __init__(self, debug: bool = False):
         self.session_map: Dict[str, Any] = {}
+        self.debug = debug
 
     @staticmethod
     def extract_text_content(result):
@@ -49,15 +50,18 @@ class MCPManager:
         return name, session, tools
 
     def tool_handler_factory(self, server_name, service_name):
+        debug = self.debug
+
         async def handler(input_data):
             session = self.session_map.get(server_name)
             if not session:
                 return f"[ERROR] No MCP session for server: {server_name}"
             try:
                 result = await session.call_tool(service_name, input_data)
-                print(
-                    f"[DEBUG] MCP result for {server_name}-{service_name}: {result!r}"
-                )
+                if debug:
+                    print(
+                        f"[DEBUG] MCP result for {server_name}-{service_name}: {result!r}"
+                    )
                 content = getattr(result, "content", result)
                 return MCPManager.extract_text_content(content)
             except Exception as e:
@@ -69,12 +73,13 @@ class MCPManager:
 
         return handler
 
-    async def register_tools(self, exit_stack: AsyncExitStack):
+    async def register_tools(self, exit_stack: AsyncExitStack, debug: bool = False):
         """
         Start all MCP sessions and return:
           - a list of tool definitions (with name <server name>-<service name>)
           - a session map {<server name>: session}
         """
+        self.debug = debug
         config = await self.load_mcp_config()
         servers = config.get("mcpServers", {})
         tool_defs = []
@@ -100,9 +105,10 @@ class MCPManager:
             except Exception as e:
                 print(f"Failed to start session for {name}: {e}")
         TOOLS.extend(tool_defs)
-        print(f"[INFO] Loaded {len(tool_defs)} MCP tools")
-        # for tool in tool_defs:
-        #     print(f"Tool: {tool['name']}")
-        #     print(f"Description: {tool['description']}")
-        #     print(f"Input Schema: {tool['input_schema']}")
-        #     print("-" * 50)
+        if debug:
+            print(f"[INFO] Loaded {len(tool_defs)} MCP tools")
+            for tool in tool_defs:
+                print(f"Tool: {tool['name']}")
+                print(f"Description: {tool['description']}")
+                print(f"Input Schema: {tool['input_schema']}")
+                print("-" * 50)
