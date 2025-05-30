@@ -14,6 +14,7 @@ import asyncio
 from contextlib import AsyncExitStack, suppress
 from agent_loop.mcp_client import MCPManager
 import inspect
+import datetime
 
 load_dotenv(dotenv_path=os.path.expanduser("~/.config/agent-loop/.env"))
 
@@ -25,6 +26,8 @@ def user_input() -> List[Dict]:
     if x.lower() in {"exit", "quit"}:
         print("👋 Goodbye!")
         raise SystemExit
+    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    x = f"{x}\n(Current date and time: {now})"
     return [{"type": "text", "text": x}]
 
 
