@@ -39,7 +39,7 @@ tool_definition = {
 }
 
 
-def handle_tool_call(input_data):
+def handle_call(input_data):
     """
     Process the tool call with the given input data.
 
@@ -76,9 +76,9 @@ TOOLS = [
 ]
 
 TOOL_HANDLERS = {
-    "bash": bash.handle_tool_call,
+    "bash": bash.handle_call,
     # ... other handler mappings
-    "my_tool": my_tool.handle_tool_call,  # Add your tool handler here
+    "my_tool": my_tool.handle_call,  # Add your tool handler here
 }
 ```
 
@@ -143,7 +143,7 @@ Follow these functional programming principles:
 Example of a handler with proper error handling:
 
 ```python
-def handle_tool_call(input_data):
+def handle_call(input_data):
     try:
         # Validate required inputs
         if "required_param" not in input_data:
@@ -176,7 +176,7 @@ API_KEY = os.getenv("MY_TOOL_API_KEY")
 BASE_URL = os.getenv("MY_TOOL_BASE_URL")
 
 # Then check these in your handler:
-def handle_tool_call(input_data):
+def handle_call(input_data):
     if not API_KEY or not BASE_URL:
         return "❌ Missing required environment variables in .env"
 
@@ -234,7 +234,7 @@ tool_definition = {
     }
 }
 
-def handle_tool_call(input_data):
+def handle_call(input_data):
     if not WEATHER_API_KEY:
         return "❌ Missing WEATHER_API_KEY environment variable"
 
