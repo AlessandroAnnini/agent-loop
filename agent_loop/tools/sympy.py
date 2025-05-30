@@ -47,7 +47,7 @@ tool_definition = {
 }
 
 
-def handle_tool_call(input_data):
+def handle_call(input_data):
     operation = input_data["operation"]
     expr_str = input_data["expression"]
     var_str = input_data.get("variables", "x")

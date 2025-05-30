@@ -27,7 +27,7 @@ tool_definition = {
 }
 
 
-def handle_tool_call(input_data):
+def handle_call(input_data):
     path = input_data.get("path", ".")
     max_depth = input_data.get("max_depth", 2)
     preview_bytes = input_data.get("preview_bytes", 500)

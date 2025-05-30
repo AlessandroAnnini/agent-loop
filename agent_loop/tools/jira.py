@@ -31,7 +31,7 @@ tool_definition = {
 }
 
 
-def handle_tool_call(input_data):
+def handle_call(input_data):
     if not all([JIRA_BASE_URL, JIRA_EMAIL, JIRA_API_TOKEN]):
         return "Missing JIRA credentials. Please set JIRA_BASE_URL, JIRA_EMAIL, and JIRA_API_TOKEN in your .env file."
 

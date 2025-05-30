@@ -10,15 +10,24 @@ from agent_loop.tools import TOOLS, TOOL_HANDLERS
 import argparse
 from halo import Halo
 from dotenv import load_dotenv
+import asyncio
+from contextlib import AsyncExitStack, suppress
+from agent_loop.mcp_client import MCPManager
+import inspect
+import datetime
 
 load_dotenv(dotenv_path=os.path.expanduser("~/.config/agent-loop/.env"))
+
+mcp_manager = MCPManager()
 
 
 def user_input() -> List[Dict]:
     x = input("\ndev@agent-loop:~$ ")
     if x.lower() in {"exit", "quit"}:
-        print("Goodbye!")
+        print("👋 Goodbye!")
         raise SystemExit
+    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    x = f"{x}\n(Current date and time: {now})"
     return [{"type": "text", "text": x}]
 
 
@@ -27,30 +36,16 @@ def create_llm():
     anthropic_model = os.getenv("ANTHROPIC_MODEL", "claude-3-7-sonnet-latest")
     openai_key = os.getenv("OPENAI_API_KEY")
     openai_model = os.getenv("OPENAI_MODEL", "gpt-4o")
-
     if not anthropic_key and not openai_key:
         raise EnvironmentError(
-            "No API keys found. Please set either ANTHROPIC_API_KEY or OPENAI_API_KEY "
-            "environment variables. If both are set, ANTHROPIC_API_KEY will be used."
+            "No API keys found. Please set either ANTHROPIC_API_KEY or OPENAI_API_KEY environment variables."
         )
-
-    # Check available API keys and select provider
     if anthropic_key:
-        # Use Anthropic if its key is available (priority)
         return create_anthropic_llm(anthropic_model, anthropic_key)
-    elif openai_key:
-        # Fallback to OpenAI if only its key is available
-        return create_openai_llm(openai_model, openai_key)
-    else:
-        # No API keys available
-        raise EnvironmentError(
-            "No API keys found. Please set either ANTHROPIC_API_KEY or OPENAI_API_KEY "
-            "environment variables. If both are set, ANTHROPIC_API_KEY will be used."
-        )
+    return create_openai_llm(openai_model, openai_key)
 
 
 def get_tool_description(tool_name: str) -> str:
-    """Return the description for a tool given its name."""
     for tool in TOOLS:
         if tool.get("name") == tool_name:
             return tool.get("description", "No description available.")
@@ -58,23 +53,22 @@ def get_tool_description(tool_name: str) -> str:
 
 
 def confirm_tool_execution(tool_name: str, input_data: Dict) -> bool:
-    """Prompt the user to confirm execution of a tool call."""
     description = get_tool_description(tool_name)
-    print(f"\n[CONFIRMATION REQUIRED]")
-    print(f"Tool: {tool_name}")
-    print(f"Description: {description}")
-    print(f"Input: {input_data}")
-    print("Do you want to execute this command? [y/N]: ", end="")
-    answer = input().strip().lower()
+    print(
+        f"\n⚠️ [CONFIRMATION REQUIRED]\nTool: {tool_name}\nDescription: {description}\nInput: {input_data}"
+    )
+    answer = input("Do you want to execute this command? [y/N]: ").strip().lower()
     return answer in {"y", "yes"}
 
 
-def handle_tool_call(tool_call: Dict, debug: bool = False, safe: bool = False) -> Dict:
+async def handle_tool_call(
+    tool_call: Dict, debug: bool = False, safe: bool = False
+) -> Dict:
     name = tool_call["name"]
     input_data = tool_call["input"]
+    print(f"🛠️ [Agent] Calling tool: {name} | Input: {input_data}")
     if debug:
         print(f"\n[Tool: {name}] Input: {input_data}\n")
-
     if safe and not confirm_tool_execution(name, input_data):
         return {
             "type": "tool_result",
@@ -82,16 +76,17 @@ def handle_tool_call(tool_call: Dict, debug: bool = False, safe: bool = False) -
             "content": [
                 {
                     "type": "text",
-                    "text": f"[SKIPPED] {name} command was not executed by user request.",
-                }
+                    "text": f"⚠️ [SKIPPED] {name} command was not executed by user request.",
+                },
             ],
         }
-
     handler = TOOL_HANDLERS.get(name)
     if not handler:
         raise ValueError(f"No handler for tool: {name}")
-
-    output = handler(input_data)
+    if inspect.iscoroutinefunction(handler):
+        output = await handler(input_data)
+    else:
+        output = handler(input_data)
     if debug:
         print(output)
     return {
@@ -101,7 +96,7 @@ def handle_tool_call(tool_call: Dict, debug: bool = False, safe: bool = False) -
     }
 
 
-def loop(llm_fn, debug: bool = False, safe: bool = False):
+async def loop(llm_fn, debug: bool = False, safe: bool = False):
     msg = user_input()
     while True:
         spinner = Halo(text="Thinking...", spinner="dots")
@@ -110,31 +105,48 @@ def loop(llm_fn, debug: bool = False, safe: bool = False):
             response, tool_calls = llm_fn(msg)
         finally:
             spinner.stop()
-        print("Agent:", response)
-
+        print(f"💬 Agent: {response}")
         if tool_calls:
             tool_results = [
-                handle_tool_call(tc, debug=debug, safe=safe) for tc in tool_calls
+                await handle_tool_call(tc, debug=debug, safe=safe) for tc in tool_calls
             ]
             msg = tool_results
         else:
             msg = user_input()
 
 
-def main():
-    parser = argparse.ArgumentParser(description="Agent Loop")
-    parser.add_argument("--debug", action="store_true", help="Show tool input/output")
-    parser.add_argument(
-        "--safe",
-        action="store_true",
-        help="Require confirmation before executing tools",
-    )
-    args = parser.parse_args()
-
+async def agent_main():
     try:
-        loop(create_llm(), debug=args.debug, safe=args.safe)
+        async with AsyncExitStack() as exit_stack:
+            parser = argparse.ArgumentParser(description="Agent Loop")
+            parser.add_argument(
+                "--debug", action="store_true", help="Show tool input/output"
+            )
+            parser.add_argument(
+                "--safe",
+                action="store_true",
+                help="Require confirmation before executing tools",
+            )
+            args = parser.parse_args()
+            spinner = Halo(text="Loading MCP servers...", spinner="dots")
+            spinner.start()
+            try:
+                await mcp_manager.register_tools(exit_stack, debug=args.debug)
+            finally:
+                spinner.stop()
+            try:
+                await loop(create_llm(), debug=args.debug, safe=args.safe)
+            except KeyboardInterrupt:
+                print("\n👋 Interrupted. Goodbye!")
+    except asyncio.CancelledError:
+        pass
+
+
+def main():
+    try:
+        asyncio.run(agent_main())
     except KeyboardInterrupt:
-        print("\nInterrupted. Goodbye!")
+        print("\n👋 Interrupted. Goodbye!")
 
 
 if __name__ == "__main__":

@@ -28,7 +28,7 @@ tool_definition = {
 }
 
 
-def handle_tool_call(input_data):
+def handle_call(input_data):
     url = input_data["url"]
     method = input_data.get("method", "GET").upper()
     headers = input_data.get("headers", "")

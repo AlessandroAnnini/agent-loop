@@ -26,7 +26,7 @@ tool_definition = {
 }
 
 
-def handle_tool_call(input_data):
+def handle_call(input_data):
     raw = input_data["json_string"]
     mode = input_data["mode"]
     sort_keys = input_data.get("sort_keys", False)
