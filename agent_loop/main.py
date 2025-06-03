@@ -3,6 +3,7 @@
 # dependencies = ["anthropic>=0.45.0", "openai>=1.0.0"]
 # ///
 import os
+import json
 from typing import Dict, List, Optional
 from agent_loop.providers.anthropic import create_anthropic_llm
 from agent_loop.providers.openai import create_openai_llm
@@ -116,10 +117,12 @@ class AgentLoop:
             f"🛠️ [Agent] Calling tool: {name} | Input: {input_data}",
             simple_text=self.simple_text,
         )
+        
         if self.debug:
             agent_info(
                 f"\n[Tool: {name}] Input: {input_data}\n", simple_text=self.simple_text
             )
+            
         if self.safe and not self.confirm_tool_execution(name, input_data):
             return {
                 "type": "tool_result",
@@ -131,21 +134,41 @@ class AgentLoop:
                     },
                 ],
             }
+            
         handler = TOOL_HANDLERS.get(name)
         if not handler:
             agent_error(f"No handler for tool: {name}", simple_text=self.simple_text)
             raise ValueError(f"No handler for tool: {name}")
-        if inspect.iscoroutinefunction(handler):
-            output = await handler(input_data)
-        else:
-            output = handler(input_data)
-        if self.debug:
-            agent_info(str(output), simple_text=self.simple_text)
-        return {
-            "type": "tool_result",
-            "tool_use_id": tool_call["id"],
-            "content": [{"type": "text", "text": output}],
-        }
+        
+        try:
+            if inspect.iscoroutinefunction(handler):
+                output = await handler(input_data)
+            else:
+                output = handler(input_data)
+                
+            if self.debug:
+                agent_info(str(output), simple_text=self.simple_text)
+                
+            return {
+                "type": "tool_result",
+                "tool_use_id": tool_call["id"],
+                "content": [{"type": "text", "text": output}],
+            }
+        except Exception as e:
+            error_message = f"❌ [ERROR] Tool '{name}' failed: {type(e).__name__}: {str(e)}"
+            
+            if self.debug:
+                import traceback
+                error_message += f"\n\nInputs: {json.dumps(input_data)}\n\n"
+                error_message += f"Stack trace:\n{traceback.format_exc()}"
+            
+            agent_error(error_message, simple_text=self.simple_text)
+            
+            return {
+                "type": "tool_result",
+                "tool_use_id": tool_call["id"],
+                "content": [{"type": "text", "text": error_message}],
+            }
 
     async def run_loop(self, llm_fn: callable) -> None:
         """
@@ -178,21 +201,44 @@ class AgentLoop:
             agent_reply(f"💬 Agent: {response}", simple_text=self.simple_text)
             if tool_calls:
                 tool_results = []
+                
                 for tc in tool_calls:
                     self.interrupt_event.clear()
-                    tool_fut = asyncio.create_task(self.handle_tool_call(tc))
-                    while not tool_fut.done():
-                        await asyncio.sleep(0.1)
+                    try:
+                        tool_fut = asyncio.create_task(self.handle_tool_call(tc))
+                        
+                        # Wait for completion or interruption
+                        while not tool_fut.done():
+                            await asyncio.sleep(0.1)
+                            if self.interrupt_event.is_set():
+                                tool_fut.cancel()
+                                break
+                                
                         if self.interrupt_event.is_set():
                             break
-                    if self.interrupt_event.is_set():
-                        break
-                    tool_results.append(await tool_fut)
+                            
+                        result = await tool_fut
+                        tool_results.append(result)
+                        
+                    except asyncio.CancelledError:
+                        raise
+                    except Exception as e:
+                        # Handle TaskGroup or other unhandled exceptions
+                        error_message = f"❌ [Error] Failed to process tool '{tc['name']}': {e}"
+                        agent_error(error_message, simple_text=self.simple_text)
+                        
+                        tool_results.append({
+                            "type": "tool_result",
+                            "tool_use_id": tc["id"],
+                            "content": [{"type": "text", "text": error_message}],
+                        })
+                
                 if self.interrupt_event.is_set():
                     msg = self.user_input()
                     if msg is None:
                         return
                     continue
+                
                 msg = tool_results
             else:
                 msg = self.user_input()
