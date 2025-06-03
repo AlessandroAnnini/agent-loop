@@ -31,10 +31,39 @@ from agent_loop.constants import (
     HELP_MESSAGE,
 )
 from agent_loop.exceptions import GracefulExit
+import importlib.metadata
 
 load_dotenv(dotenv_path=os.path.expanduser("~/.config/agent-loop/.env"))
 
 mcp_manager = MCPManager()
+
+
+def display_welcome_message():
+    """
+    Display a beautiful welcome message with the current version.
+    """
+    version = importlib.metadata.version("agent-loop")
+    welcome_message = f"""
+╭────────────────────────────────────────────────────────╮
+│                                                        │
+│   █████╗  ██████╗ ███████╗███╗   ██╗████████╗          │
+│  ██╔══██╗██╔════╝ ██╔════╝████╗  ██║╚══██╔══╝          │
+│  ███████║██║  ███╗█████╗  ██╔██╗ ██║   ██║             │
+│  ██╔══██║██║   ██║██╔══╝  ██║╚██╗██║   ██║             │
+│  ██║  ██║╚██████╔╝███████╗██║ ╚████║   ██║             │
+│  ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝             │
+│                                                        │
+│  ██╗      ██████╗  ██████╗ ██████╗                     │
+│  ██║     ██╔═══██╗██╔═══██╗██╔══██╗                    │
+│  ██║     ██║   ██║██║   ██║██████╔╝                    │
+│  ██║     ██║   ██║██║   ██║██╔═══╝                     │
+│  ███████╗╚██████╔╝╚██████╔╝██║                         │
+│  ╚══════╝ ╚═════╝  ╚═════╝ ╚═╝                         │
+│                                                        │
+│  Version {version:<43} │
+╰────────────────────────────────────────────────────────╯
+    """
+    print(welcome_message)
 
 
 async def run_llm(llm_fn, msg):
@@ -269,6 +298,9 @@ async def agent_main() -> None:
     Handles graceful exit and cancellation.
     """
     try:
+        # Display welcome message as the first thing
+        display_welcome_message()
+        
         async with AsyncExitStack() as exit_stack:
             parser = argparse.ArgumentParser(description="Agent Loop")
             parser.add_argument(
