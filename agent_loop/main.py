@@ -15,19 +15,30 @@ from contextlib import AsyncExitStack, suppress
 from agent_loop.mcp_client import MCPManager
 import inspect
 import datetime
+from agent_loop.output import (
+    agent_reply,
+    agent_tool,
+    agent_confirm,
+    agent_error,
+    agent_info,
+)
 
 load_dotenv(dotenv_path=os.path.expanduser("~/.config/agent-loop/.env"))
 
 mcp_manager = MCPManager()
 
 
-def user_input() -> List[Dict]:
+def user_input(simple_text: bool = False) -> List[Dict]:
     x = input("\ndev@agent-loop:~$ ")
     if x.lower() in {"exit", "quit"}:
         print("👋 Goodbye!")
         raise SystemExit
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    x = f"{x}\n(Current date and time: {now})"
+    if simple_text:
+        format_instruction = "(Format your answer as plain ASCII text, optimized for CLI readability. Do not use markdown or special formatting.)"
+    else:
+        format_instruction = "(Format your answer using markdown syntax. Use markdown features for clarity and readability in a terminal that supports markdown rendering.)"
+    x = f"{x}\n(Current date and time: {now})\n{format_instruction}"
     return [{"type": "text", "text": x}]
 
 
@@ -52,24 +63,29 @@ def get_tool_description(tool_name: str) -> str:
     return "No description available."
 
 
-def confirm_tool_execution(tool_name: str, input_data: Dict) -> bool:
+def confirm_tool_execution(
+    tool_name: str, input_data: Dict, simple_text: bool = False
+) -> bool:
     description = get_tool_description(tool_name)
-    print(
-        f"\n⚠️ [CONFIRMATION REQUIRED]\nTool: {tool_name}\nDescription: {description}\nInput: {input_data}"
+    agent_confirm(
+        f"\n⚠️ [CONFIRMATION REQUIRED]\nTool: {tool_name}\nDescription: {description}\nInput: {input_data}",
+        simple_text=simple_text,
     )
     answer = input("Do you want to execute this command? [y/N]: ").strip().lower()
     return answer in {"y", "yes"}
 
 
 async def handle_tool_call(
-    tool_call: Dict, debug: bool = False, safe: bool = False
+    tool_call: Dict, debug: bool = False, safe: bool = False, simple_text: bool = False
 ) -> Dict:
     name = tool_call["name"]
     input_data = tool_call["input"]
-    print(f"🛠️ [Agent] Calling tool: {name} | Input: {input_data}")
+    agent_tool(
+        f"🛠️ [Agent] Calling tool: {name} | Input: {input_data}", simple_text=simple_text
+    )
     if debug:
-        print(f"\n[Tool: {name}] Input: {input_data}\n")
-    if safe and not confirm_tool_execution(name, input_data):
+        agent_info(f"\n[Tool: {name}] Input: {input_data}\n", simple_text=simple_text)
+    if safe and not confirm_tool_execution(name, input_data, simple_text=simple_text):
         return {
             "type": "tool_result",
             "tool_use_id": tool_call["id"],
@@ -82,13 +98,14 @@ async def handle_tool_call(
         }
     handler = TOOL_HANDLERS.get(name)
     if not handler:
+        agent_error(f"No handler for tool: {name}", simple_text=simple_text)
         raise ValueError(f"No handler for tool: {name}")
     if inspect.iscoroutinefunction(handler):
         output = await handler(input_data)
     else:
         output = handler(input_data)
     if debug:
-        print(output)
+        agent_info(str(output), simple_text=simple_text)
     return {
         "type": "tool_result",
         "tool_use_id": tool_call["id"],
@@ -96,8 +113,10 @@ async def handle_tool_call(
     }
 
 
-async def loop(llm_fn, debug: bool = False, safe: bool = False):
-    msg = user_input()
+async def loop(
+    llm_fn, debug: bool = False, safe: bool = False, simple_text: bool = False
+):
+    msg = user_input(simple_text=simple_text)
     while True:
         spinner = Halo(text="Thinking...", spinner="dots")
         spinner.start()
@@ -105,14 +124,17 @@ async def loop(llm_fn, debug: bool = False, safe: bool = False):
             response, tool_calls = llm_fn(msg)
         finally:
             spinner.stop()
-        print(f"💬 Agent: {response}")
+        agent_reply(f"💬 Agent: {response}", simple_text=simple_text)
         if tool_calls:
             tool_results = [
-                await handle_tool_call(tc, debug=debug, safe=safe) for tc in tool_calls
+                await handle_tool_call(
+                    tc, debug=debug, safe=safe, simple_text=simple_text
+                )
+                for tc in tool_calls
             ]
             msg = tool_results
         else:
-            msg = user_input()
+            msg = user_input(simple_text=simple_text)
 
 
 async def agent_main():
@@ -127,6 +149,12 @@ async def agent_main():
                 action="store_true",
                 help="Require confirmation before executing tools",
             )
+            parser.add_argument(
+                "--simple-text",
+                "-s",
+                action="store_true",
+                help="Use plain text output instead of Rich formatting",
+            )
             args = parser.parse_args()
             spinner = Halo(text="Loading MCP servers...", spinner="dots")
             spinner.start()
@@ -135,9 +163,14 @@ async def agent_main():
             finally:
                 spinner.stop()
             try:
-                await loop(create_llm(), debug=args.debug, safe=args.safe)
+                await loop(
+                    create_llm(),
+                    debug=args.debug,
+                    safe=args.safe,
+                    simple_text=args.simple_text,
+                )
             except KeyboardInterrupt:
-                print("\n👋 Interrupted. Goodbye!")
+                agent_info("\n👋 Interrupted. Goodbye!", simple_text=args.simple_text)
     except asyncio.CancelledError:
         pass
 
