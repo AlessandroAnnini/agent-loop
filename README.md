@@ -65,6 +65,32 @@
 
 ---
 
+## Code Structure
+
+- `main.py` — Main event loop and orchestration
+- `cli_input.py` — Terminal input handling (CTRL+C, CTRL+Q, backspace, etc.)
+- `signals.py` — Signal handling (SIGINT for interruption)
+- `constants.py` — User-facing strings and help messages
+- `exceptions.py` — Custom exceptions for clean exit and error handling
+
+All components are designed for modularity, minimalism, and functional programming style.
+
+---
+
+## Graceful Exit and Signal Handling
+
+- **CTRL+C**: Interrupts the current operation and returns to the prompt (does not exit).
+- **CTRL+Q** or typing `exit`/`quit` at the prompt: Exits the application cleanly, with no traceback or error.
+- Only SIGINT (CTRL+C) is handled as a signal for async safety; quit is handled at the prompt for robust, async-safe shutdown.
+
+---
+
+## Async-Aware LLM Support
+
+Agent Loop automatically supports both synchronous and asynchronous LLM functions, ensuring optimal performance and compatibility. The main event loop will call your LLM function in the most efficient way, whether it is sync or async.
+
+---
+
 ## Features
 
 - Conversational AI agent powered by Anthropic Claude or OpenAI GPT
