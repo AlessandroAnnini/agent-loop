@@ -1,53 +1,39 @@
-from agent_loop.tools import (
-    bash,
-    python_eval,
-    curl,
-    git,
-    docker,
-    project_inspector,
-    kubectl,
-    aws_cli,
-    jira,
-    confluence,
-    json,
-    http,
-    filesystem,
-    node_eval,
-    sympy,
-)
+import importlib.util
+import sys
+from pathlib import Path
 
-TOOLS = [
-    bash.tool_definition,
-    python_eval.tool_definition,
-    curl.tool_definition,
-    git.tool_definition,
-    docker.tool_definition,
-    project_inspector.tool_definition,
-    kubectl.tool_definition,
-    aws_cli.tool_definition,
-    jira.tool_definition,
-    confluence.tool_definition,
-    json.tool_definition,
-    http.tool_definition,
-    filesystem.tool_definition,
-    node_eval.tool_definition,
-    sympy.tool_definition,
-]
+# Directories to scan for tools
+BUILTIN_TOOLS_DIR = Path(__file__).parent
+USER_TOOLS_DIR = Path.home() / ".config/agent-loop/tools"
 
-TOOL_HANDLERS = {
-    "bash": bash.handle_call,
-    "python": python_eval.handle_call,
-    "curl": curl.handle_call,
-    "git": git.handle_call,
-    "docker": docker.handle_call,
-    "project_inspector": project_inspector.handle_call,
-    "kubectl": kubectl.handle_call,
-    "aws_cli": aws_cli.handle_call,
-    "jira": jira.handle_call,
-    "confluence": confluence.handle_call,
-    "json": json.handle_call,
-    "http": http.handle_call,
-    "filesystem": filesystem.handle_call,
-    "node": node_eval.handle_call,
-    "sympy": sympy.handle_call,
-}
+TOOLS = []
+TOOL_HANDLERS = {}
+
+
+def load_tools_from_dir(directory):
+    if not directory.exists() or not directory.is_dir():
+        return []
+    tools = []
+    for file in directory.iterdir():
+        if file.suffix != ".py" or not file.is_file():
+            continue
+        if file.name == "__init__.py":
+            continue
+        spec = importlib.util.spec_from_file_location(file.stem, str(file))
+        mod = importlib.util.module_from_spec(spec)
+        try:
+            spec.loader.exec_module(mod)
+        except Exception as e:
+            print(f"[agent-loop] Failed to import {file}: {e}", file=sys.stderr)
+            continue
+        if hasattr(mod, "tool_definition") and hasattr(mod, "handle_call"):
+            tools.append((mod.tool_definition, mod.handle_call))
+    return tools
+
+
+# Load built-in and user tools
+all_tools = load_tools_from_dir(BUILTIN_TOOLS_DIR) + load_tools_from_dir(USER_TOOLS_DIR)
+
+for tool_def, handler in all_tools:
+    TOOLS.append(tool_def)
+    TOOL_HANDLERS[tool_def["name"]] = handler
