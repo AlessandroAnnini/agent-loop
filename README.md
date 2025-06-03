@@ -1,6 +1,6 @@
 # Agent Loop
 
-> **An AI Agent with optional Human-in-the-Loop Safety and Model Context Protocol (MCP) integration**
+> **An AI Agent with optional Human-in-the-Loop Safety, Model Context Protocol (MCP) integration, and beautiful, themeable CLI output**
 
 ---
 
@@ -371,6 +371,84 @@ Do you want to execute this command? [y/N]: y
 STDOUT:
 CONTAINER ID   IMAGE   ...
 ```
+
+## ✨ Beautiful, Themeable CLI Output
+
+Agent Loop uses [Rich](https://rich.readthedocs.io/) to render all agent replies and notifications in the terminal. By default, all agent answers are formatted in **Markdown** and rendered with color, style, and structure for maximum readability.
+
+- **Default:** Answers are rendered as Markdown (headings, lists, code blocks, etc.)
+- **Theming:** Colors and styles are fully customizable via a JSON theme file
+- **Plain Text Mode:** Use `--simple-text` or `-s` to disable Rich/Markdown and get pure ASCII output (great for piping or minimal terminals)
+
+### Example (Markdown Output)
+
+```bash
+💬 Agent:
+# Docker Containers
+
+| CONTAINER ID | IMAGE | STATUS |
+|--------------|-------|--------|
+| 123abc       | nginx | Up     |
+| ...          | ...   | ...    |
+```
+
+### Example (Plain Text Output)
+
+```bash
+💬 Agent:
+Docker Containers
+----------------
+CONTAINER ID   IMAGE   STATUS
+123abc         nginx   Up
+...            ...     ...
+```
+
+---
+
+## 🎨 Customizing the Theme
+
+You can fully customize the CLI appearance by editing the theme file:
+
+- **Location:** `~/.config/agent-loop/theme.json`
+- **Format:** JSON mapping style names to Rich style strings
+- **Fallback:** If the file is missing or invalid, a beautiful default theme is used
+
+**Example `theme.json`:**
+
+```json
+{
+  "agent.reply": "bold cyan",
+  "agent.tool": "bold magenta",
+  "agent.confirm": "bold yellow",
+  "agent.error": "bold red",
+  "agent.info": "dim white"
+}
+```
+
+Change colors, add emphasis, or create your own style! See the [Rich style guide](https://rich.readthedocs.io/en/latest/style.html) for options.
+
+---
+
+## 🚀 CLI Flags
+
+| Flag                  | Description                                                       |
+| --------------------- | ----------------------------------------------------------------- |
+| `--simple-text`, `-s` | Output plain ASCII text (no Rich, no Markdown)                    |
+| `--safe`              | Require confirmation before executing any tool                    |
+| `--debug`             | Show tool input/output for transparency                           |
+| `--model`             | Select the LLM model (e.g., `gpt-4o`, `claude-3-7-sonnet-latest`) |
+
+---
+
+## 🛠️ Creating Your Own Tools
+
+Agent Loop is fully extensible! You can add your own tools in minutes—no need to modify the core code.
+
+- **Drop-in Python modules** (pure functions, functional programming style)
+- **Auto-discovered**: Just place your `.py` file in `agent_loop/tools/` (built-in) or `~/.config/agent-loop/tools/` (user tools)
+- **No extra dependencies** for user tools—see the policy in the guide
+
+👉 **See the full guide:** [CREATING_TOOLS.md](CREATING_TOOLS.md)
 
 ## License
 
