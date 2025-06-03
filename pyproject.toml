@@ -1,6 +1,6 @@
 [project]
 name = "agent-loop"
-version = "2.0.0"
+version = "2.1.0"
 description = "An AI Agent with optional Human-in-the-Loop Safety and Model Context Protocol (MCP) integration"
 authors = [{ name = "Alessandro Filippo Annini", email = "alessandro.annini@gmail.com" }]
 readme = "README.md"
