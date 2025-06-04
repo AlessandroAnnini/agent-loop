@@ -80,7 +80,7 @@ All components are designed for modularity, minimalism, and functional programmi
 ## Graceful Exit and Signal Handling
 
 - **CTRL+C**: Interrupts the current operation and returns to the prompt (does not exit).
-- **CTRL+Q** or typing `exit`/`quit` at the prompt: Exits the application cleanly, with no traceback or error.
+- **CTRL+D** or typing `exit`/`quit` at the prompt: Exits the application cleanly, with no traceback or error.
 - Only SIGINT (CTRL+C) is handled as a signal for async safety; quit is handled at the prompt for robust, async-safe shutdown.
 
 ---
