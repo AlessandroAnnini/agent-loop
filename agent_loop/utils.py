@@ -21,3 +21,23 @@ def load_system_prompt() -> str:
         raise FileNotFoundError(
             "SYSTEM_PROMPT.txt not found in package or config directory."
         )
+
+
+def get_ai_temperature() -> float:
+    """
+    Parse and validate AI temperature from environment variable.
+    Returns a float between 0.0 and 2.0, defaulting to 0.7.
+    """
+    try:
+        temperature = float(os.getenv("AI_TEMPERATURE", "0.7"))
+        if not 0.0 <= temperature <= 2.0:
+            raise ValueError(
+                f"Temperature must be between 0.0 and 2.0, got: {temperature}"
+            )
+        return temperature
+    except ValueError as e:
+        if "could not convert" in str(e):
+            raise ValueError(
+                f"Invalid AI_TEMPERATURE value: {os.getenv('AI_TEMPERATURE')}. Must be a number."
+            )
+        raise
