@@ -9,7 +9,7 @@
 ![Anthropic](https://img.shields.io/badge/Anthropic-API-orange)
 ![OpenAI](https://img.shields.io/badge/OpenAI-API-green?logo=openai)
 ![MCP](https://img.shields.io/badge/Tool-MCP-4B8BBE?logo=protocols)
-**![Version](https://img.shields.io/badge/version-2.0.0-blue)**
+**![Version](https://img.shields.io/badge/version-2.2.0-blue)**
 
 ## Tools
 
@@ -94,10 +94,15 @@ Agent Loop automatically supports both synchronous and asynchronous LLM function
 ## Features
 
 - Conversational AI agent powered by Anthropic Claude or OpenAI GPT
+- **Configurable AI provider and temperature** via environment variables
 - Tool execution with optional human confirmation (`--safe` mode)
 - Debug mode for transparency (`--debug`)
+- **Custom tools support** with automatic discovery and display
+- **Visual tool differentiation** with distinct icons for built-in, MCP, and custom tools
 - Modular, extensible tool system
 - Functional programming style throughout
+- **Enhanced error handling** with detailed diagnostic information
+- **Flexible configuration** with local `.env` file priority
 - **MCP (Model Context Protocol) integration for external tool/service discovery and use**
 
 ---
@@ -149,6 +154,20 @@ Agent Loop can now connect to any number of MCP-compatible servers, dynamically 
 
 ## Available Tools
 
+Agent Loop comes with built-in tools and supports custom tools. The application automatically distinguishes between different tool types with visual indicators:
+
+- **🛠️ Built-in Tools**: Core application tools
+- **🔌 MCP Tools**: External tools from Model Context Protocol servers
+- **🔧 Custom Tools**: User-defined tools loaded from `~/.config/agent-loop/tools/`
+
+On startup, Agent Loop will display any custom tools that have been loaded:
+
+```
+🔧 [Custom Tools] Loaded 2 custom tool(s) from ~/.config/agent-loop/tools:
+  • hello (hello.py) - Returns a friendly greeting
+  • my_tool (my_tool.py) - Custom automation tool
+```
+
 | Tool                  | Description                                                     |
 | --------------------- | --------------------------------------------------------------- |
 | **bash**              | Execute bash commands                                           |
@@ -166,6 +185,7 @@ Agent Loop can now connect to any number of MCP-compatible servers, dynamically 
 | **jira**              | Query JIRA via REST API using safe, read-only endpoints         |
 | **confluence**        | Query Atlassian Confluence Cloud via REST API (read-only)       |
 | **MCP**               | All services from configured MCP servers (see above)            |
+| **Custom**            | User-defined tools from `~/.config/agent-loop/tools/`           |
 
 See [Creating Tools Guide](CREATING_TOOLS.md) for instructions on how to create your own tools.
 
@@ -301,9 +321,15 @@ mkdir -p ~/.config/agent-loop
 nano ~/.config/agent-loop/.env
 ```
 
+You can also create a local `.env` file in your project directory, which will take priority over the global configuration.
+
 You can use the `.env.example` file from the source repository as a template. At minimum, include one of these API keys:
 
 ```text
+# AI Configuration
+AI_PROVIDER=anthropic  # Choose: anthropic (default) or openai
+AI_TEMPERATURE=0.7     # Model temperature: 0.0-2.0 (default: 0.7)
+
 # Anthropic
 ANTHROPIC_API_KEY=your_anthropic_api_key
 ANTHROPIC_MODEL=claude-3-7-sonnet-latest  # Optional, defaults to claude-3-7-sonnet-latest
@@ -323,7 +349,22 @@ CONFLUENCE_EMAIL=your_confluence_email
 CONFLUENCE_API_TOKEN=your_confluence_api_token
 ```
 
-If both Anthropic and OpenAI API keys are set, Anthropic Claude will be used by default.
+**Configuration Priority:**
+
+- Local `.env` file in your current directory (highest priority)
+- Global `.env` file in `~/.config/agent-loop/` (fallback)
+
+**AI Provider Selection:**
+
+- Set `AI_PROVIDER=anthropic` to use Claude models (default)
+- Set `AI_PROVIDER=openai` to use GPT models
+- If the preferred provider's API key is missing, the application will automatically fall back to the available provider
+
+**Temperature Control:**
+
+- `AI_TEMPERATURE` controls response creativity and randomness (0.0 = deterministic, 1.0 = creative)
+- Valid range: 0.0 to 2.0
+- Default: 0.7 (balanced)
 
 ### Custom System Prompt
 
