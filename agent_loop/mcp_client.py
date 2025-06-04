@@ -75,9 +75,7 @@ class MCPManager:
 
     async def register_tools(self, exit_stack: AsyncExitStack, debug: bool = False):
         """
-        Start all MCP sessions and return:
-          - a list of tool definitions (with name <server name>-<service name>)
-          - a session map {<server name>: session}
+        Start all MCP sessions and return the number of MCP tools loaded.
         """
         self.debug = debug
         config = await self.load_mcp_config()
@@ -112,3 +110,5 @@ class MCPManager:
                 print(f"Description: {tool['description']}")
                 print(f"Input Schema: {tool['input_schema']}")
                 print("-" * 50)
+
+        return len(tool_defs)
