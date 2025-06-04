@@ -8,9 +8,10 @@ USER_TOOLS_DIR = Path.home() / ".config/agent-loop/tools"
 
 TOOLS = []
 TOOL_HANDLERS = {}
+CUSTOM_TOOLS = []  # Track custom tools for display
 
 
-def load_tools_from_dir(directory):
+def load_tools_from_dir(directory, is_custom=False):
     if not directory.exists() or not directory.is_dir():
         return []
     tools = []
@@ -27,13 +28,44 @@ def load_tools_from_dir(directory):
             print(f"[agent-loop] Failed to import {file}: {e}", file=sys.stderr)
             continue
         if hasattr(mod, "tool_definition") and hasattr(mod, "handle_call"):
-            tools.append((mod.tool_definition, mod.handle_call))
+            tool_info = {
+                "definition": mod.tool_definition,
+                "handler": mod.handle_call,
+                "file_name": file.name,
+                "is_custom": is_custom,
+            }
+            tools.append(tool_info)
     return tools
 
 
-# Load built-in and user tools
-all_tools = load_tools_from_dir(BUILTIN_TOOLS_DIR) + load_tools_from_dir(USER_TOOLS_DIR)
+def display_custom_tools():
+    """Display loaded custom tools during startup"""
+    if not CUSTOM_TOOLS:
+        return
 
-for tool_def, handler in all_tools:
+    print(
+        f"\n🔧 [Custom Tools] Loaded {len(CUSTOM_TOOLS)} custom tool(s) from ~/.config/agent-loop/tools:"
+    )
+    for tool in CUSTOM_TOOLS:
+        tool_def = tool["definition"]
+        description = tool_def.get("description", "No description")
+        # Truncate long descriptions
+        if len(description) > 60:
+            description = description[:57] + "..."
+        print(f"  • {tool_def['name']} ({tool['file_name']}) - {description}")
+
+
+# Load built-in and user tools
+builtin_tools = load_tools_from_dir(BUILTIN_TOOLS_DIR, is_custom=False)
+custom_tools = load_tools_from_dir(USER_TOOLS_DIR, is_custom=True)
+
+# Store custom tools for display
+CUSTOM_TOOLS = custom_tools.copy()
+
+# Register all tools
+all_tools = builtin_tools + custom_tools
+for tool_info in all_tools:
+    tool_def = tool_info["definition"]
+    handler = tool_info["handler"]
     TOOLS.append(tool_def)
     TOOL_HANDLERS[tool_def["name"]] = handler
