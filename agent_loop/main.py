@@ -102,20 +102,30 @@ class AgentLoop:
 
     def user_input(self) -> Optional[List[Dict]]:
         """
-        Prompt the user for input using get_user_command, supporting CTRL+Q for quit and CTRL+C for prompt interruption.
+        Prompt the user for input using get_user_command, supporting CTRL+D or 'exit'/'quit' for quit and CTRL+C for prompt interruption.
         Returns a message list suitable for LLM input, or None if the user wants to quit.
         """
-        x = get_user_command(self.simple_text)
-        if x is None:
+        user_input = get_user_command(self.simple_text)
+        if user_input is None:
             return None
+
         now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         format_instruction = (
             PLAIN_FORMAT_INSTRUCTION
             if self.simple_text
             else MARKDOWN_FORMAT_INSTRUCTION
         )
-        x = f"{x}\n(Current date and time: {now})\n{format_instruction}"
-        return [{"type": "text", "text": x}]
+        message_text = (
+            f"{user_input}\n(Current date and time: {now})\n{format_instruction}"
+        )
+        return [{"type": "text", "text": message_text}]
+
+    def _get_tool_info(self, tool_name: str) -> tuple[str, str, bool]:
+        """Get tool type, icon, and MCP status for a tool name."""
+        is_mcp_tool = "-" in tool_name
+        tool_icon = "🔌" if is_mcp_tool else "🛠️"
+        tool_type = "MCP" if is_mcp_tool else "Tool"
+        return tool_type, tool_icon, is_mcp_tool
 
     def get_tool_description(self, tool_name: str) -> str:
         """
@@ -149,9 +159,7 @@ class AgentLoop:
 
         # Use different icons for regular tools vs MCP tools
         # MCP tools have format: server-name-tool-name (contains dash)
-        is_mcp_tool = "-" in name
-        tool_icon = "🔌" if is_mcp_tool else "🛠️"
-        tool_type = "MCP" if is_mcp_tool else "Tool"
+        tool_type, tool_icon, is_mcp_tool = self._get_tool_info(name)
 
         agent_tool(
             f"{tool_icon} [Agent] Calling {tool_type.lower()}: {name} | Input: {input_data}",
@@ -280,7 +288,7 @@ class AgentLoop:
                     except asyncio.CancelledError:
                         # This is expected when a task is cancelled due to interruption
                         if self.debug:
-                            tool_type = "MCP" if "-" in tc["name"] else "Tool"
+                            tool_type, _, _ = self._get_tool_info(tc["name"])
                             agent_info(
                                 f"{tool_type} '{tc['name']}' was cancelled",
                                 simple_text=self.simple_text,
@@ -288,7 +296,7 @@ class AgentLoop:
                         break
                     except asyncio.InvalidStateError as e:
                         # Handle asyncio state errors
-                        tool_type = "MCP" if "-" in tc["name"] else "Tool"
+                        tool_type, _, _ = self._get_tool_info(tc["name"])
                         error_message = f"❌ [Asyncio Error] {tool_type} '{tc['name']}' encountered an invalid state: {str(e)}"
                         if self.debug:
                             import traceback
@@ -307,7 +315,7 @@ class AgentLoop:
                         )
                     except Exception as e:
                         # Handle TaskGroup and other unhandled exceptions with detailed reporting
-                        tool_type = "MCP" if "-" in tc["name"] else "Tool"
+                        tool_type, _, _ = self._get_tool_info(tc["name"])
                         error_type = type(e).__name__
                         error_message = f"❌ [Execution Error] Failed to process {tool_type.lower()} '{tc['name']}': {error_type}: {str(e)}"
 
@@ -426,16 +434,22 @@ async def agent_main() -> None:
                 help="Use plain text output instead of Rich formatting",
             )
             args = parser.parse_args()
-            print("🔌 [MCP] Loading MCP servers...")
+
+            # Start spinner for MCP loading
+            mcp_spinner = Halo(text="🔌 Loading MCP servers...", spinner="dots")
+            mcp_spinner.start()
+
             try:
                 mcp_count = await mcp_manager.register_tools(
                     exit_stack, debug=args.debug
                 )
+                mcp_spinner.stop()  # Stop spinner on success
                 if mcp_count > 0:
                     print(f"✅ [MCP] Loaded {mcp_count} MCP tool(s)")
                 else:
                     print("ℹ️ [MCP] No MCP tools configured")
             except Exception as e:
+                mcp_spinner.stop()  # Stop spinner on error
                 error_msg = f"❌ [MCP Error] Failed to load MCP servers: {type(e).__name__}: {str(e)}"
                 if args.debug:
                     import traceback
