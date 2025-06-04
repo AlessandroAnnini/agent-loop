@@ -12,7 +12,7 @@ def setup_signal_handlers(
     """
 
     def handle_sigint(signum, frame):
-        print("\n[Interrupted] Returning to prompt. (Press CTRL+Q to quit)")
+        print("\n[Interrupted] Returning to prompt. (Press CTRL+D to quit)")
         loop.call_soon_threadsafe(interrupt_event.set)
 
     signal.signal(signal.SIGINT, handle_sigint)
