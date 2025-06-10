@@ -332,7 +332,7 @@ AI_TEMPERATURE=0.7     # Model temperature: 0.0-2.0 (default: 0.7)
 
 # Anthropic
 ANTHROPIC_API_KEY=your_anthropic_api_key
-ANTHROPIC_MODEL=claude-3-7-sonnet-latest  # Optional, defaults to claude-3-7-sonnet-latest
+ANTHROPIC_MODEL=claude-sonnet-4-20250514  # Optional, defaults to claude-3-7-sonnet-latest
 
 # OpenAI
 OPENAI_API_KEY=your_openai_api_key
