@@ -376,8 +376,11 @@ def create_llm() -> callable:
     openai_key = os.getenv("OPENAI_API_KEY")
     openai_model = os.getenv("OPENAI_MODEL", "gpt-4o")
 
+    temperature = os.getenv("AI_TEMPERATURE", 0.7)
+
     # Debug output
     print(f"🔧 [Config] AI_PROVIDER={preferred_provider}")
+    print(f"🔧 [Config] AI_TEMPERATURE={temperature}")
     print(f"🔧 [Config] ANTHROPIC_KEY={'✓' if anthropic_key else '✗'}")
     print(f"🔧 [Config] OPENAI_KEY={'✓' if openai_key else '✗'}")
 
@@ -386,23 +389,16 @@ def create_llm() -> callable:
             "No API keys found. Please set either ANTHROPIC_API_KEY or OPENAI_API_KEY environment variables."
         )
 
-    # Use preferred provider if available
-    if preferred_provider == "anthropic" and anthropic_key:
-        print(f"✅ [Provider] Using preferred provider: Anthropic")
-        return create_anthropic_llm(anthropic_model, anthropic_key)
-    elif preferred_provider == "openai" and openai_key:
-        print(f"✅ [Provider] Using preferred provider: OpenAI")
-        return create_openai_llm(openai_model, openai_key)
-
-    # Fallback logic: use whatever is available
-    print(
-        f"⚠️ [Provider] Preferred provider '{preferred_provider}' not available, using fallback"
-    )
     if anthropic_key:
-        print(f"✅ [Provider] Fallback to: Anthropic")
-        return create_anthropic_llm(anthropic_model, anthropic_key)
-    print(f"✅ [Provider] Fallback to: OpenAI")
-    return create_openai_llm(openai_model, openai_key)
+        print(f"✅ [Provider] Using: Anthropic")
+        return create_anthropic_llm(anthropic_model, anthropic_key, temperature)
+    elif openai_key:
+        print(f"✅ [Provider] Using: OpenAI")
+        return create_openai_llm(openai_model, openai_key, temperature)
+    else:
+        raise EnvironmentError(
+            "No API keys found. Please set either ANTHROPIC_API_KEY or OPENAI_API_KEY environment variables."
+        )
 
 
 async def agent_main() -> None:

@@ -1,15 +1,12 @@
 import openai
 from agent_loop.tools import TOOLS
 import json
-from agent_loop.utils import load_system_prompt, get_ai_temperature
+from agent_loop.utils import load_system_prompt
 
 
-def create_openai_llm(model: str, api_key: str):
+def create_openai_llm(model: str, api_key: str, temperature: float):
     client = openai.OpenAI(api_key=api_key)
     messages = []
-
-    # Get validated temperature from environment
-    temperature = get_ai_temperature()
 
     print(f"Using OpenAI model: {model} (temperature: {temperature})")
 

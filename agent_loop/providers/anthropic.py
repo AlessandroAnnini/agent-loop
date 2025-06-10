@@ -1,14 +1,11 @@
 import anthropic
 from agent_loop.tools import TOOLS
-from agent_loop.utils import load_system_prompt, get_ai_temperature
+from agent_loop.utils import load_system_prompt
 
 
-def create_anthropic_llm(model: str, api_key: str):
+def create_anthropic_llm(model: str, api_key: str, temperature: float):
     client = anthropic.Anthropic(api_key=api_key)
     messages = []
-
-    # Get validated temperature from environment
-    temperature = get_ai_temperature()
 
     print(f"Using Anthropic model: {model} (temperature: {temperature})")
 
