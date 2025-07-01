@@ -35,9 +35,6 @@ def load_tools_from_dir(directory, is_custom=False):
                 "is_custom": is_custom,
             }
 
-            # print file name
-            print(f"[agent-loop] Loaded tool: {file.name}")
-
             tools.append(tool_info)
     return tools
 
