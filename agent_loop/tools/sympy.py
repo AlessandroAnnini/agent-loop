@@ -3,13 +3,37 @@ from sympy import symbols, solve, factor, expand, simplify, limit, diff, integra
 
 tool_definition = {
     "name": "sympy",
-    "description": "Perform symbolic mathematics operations using SymPy",
+    "description": (
+        "### Instructions:\n"
+        "Use this tool to perform symbolic mathematical operations using the SymPy library. "
+        "This includes algebraic simplification, equation solving, limits, derivatives, integrals, and more. "
+        "It's suitable for performing exact, symbolic computation (not numerical approximation).\n\n"
+        "Always specify the `operation` and a valid `expression`. "
+        "Use `variables` to indicate which variables to differentiate, integrate, or solve for.\n"
+        "Use `assumptions` if needed to guide symbolic behavior (e.g., assume variable is `positive`, `real`, or `integer`).\n"
+        "Use `point` only when computing limits.\n\n"
+        "### Supported Operations:\n"
+        "- `solve`: Solve algebraic equations.\n"
+        "- `factor`: Factor an expression.\n"
+        "- `expand`: Expand expressions (e.g., multiply out polynomials).\n"
+        "- `simplify`: Simplify expressions.\n"
+        "- `limit`: Compute the limit of an expression as a variable approaches a point.\n"
+        "- `differentiate`: Compute the derivative with respect to a variable.\n"
+        "- `integrate`: Compute the indefinite integral.\n"
+        "- `series`: Compute a Taylor series expansion at 0 up to the 4th order.\n"
+        "- `matrix`: Compute determinant, inverse, and eigenvalues of a symbolic matrix (input must be a 2D list).\n\n"
+        "### Example Expression Formats:\n"
+        "- `x**2 + 2*x + 1`\n"
+        "- `sin(x)/x`\n"
+        "- `diff(x**2, x)` (if using operation `differentiate`)\n"
+        "- `[[1, 2], [3, 4]]` (if using operation `matrix`)\n"
+    ),
     "input_schema": {
         "type": "object",
         "properties": {
             "operation": {
                 "type": "string",
-                "description": "Mathematical operation to perform",
+                "description": "The symbolic operation to perform (e.g., solve, simplify, integrate, etc.)",
                 "enum": [
                     "solve",
                     "factor",
@@ -24,21 +48,21 @@ tool_definition = {
             },
             "expression": {
                 "type": "string",
-                "description": "Mathematical expression as a string",
+                "description": "The mathematical expression to evaluate, written as a Python string.",
             },
             "variables": {
                 "type": "string",
-                "description": "Variables to solve for or with respect to (comma-separated)",
+                "description": "Comma-separated list of variables to operate on (default is 'x').",
                 "default": "x",
             },
             "assumptions": {
                 "type": "string",
-                "description": "Additional assumptions like domains (e.g., 'positive,real')",
+                "description": "Optional variable assumptions (e.g., 'positive,real') to refine the symbolic behavior.",
                 "default": "",
             },
             "point": {
                 "type": "string",
-                "description": "Point for limit calculation (e.g., '0' or 'oo')",
+                "description": "Point to evaluate limit at (e.g., '0', 'oo', '-oo'). Only used with the 'limit' operation.",
                 "default": "",
             },
         },

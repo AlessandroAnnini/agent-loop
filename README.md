@@ -9,7 +9,7 @@
 ![Anthropic](https://img.shields.io/badge/Anthropic-API-orange)
 ![OpenAI](https://img.shields.io/badge/OpenAI-API-green?logo=openai)
 ![MCP](https://img.shields.io/badge/Tool-MCP-4B8BBE?logo=protocols)
-**![Version](https://img.shields.io/badge/version-2.2.0-blue)**
+**![Version](https://img.shields.io/badge/version-2.2.2-blue)**
 
 ## Tools
 
@@ -17,12 +17,17 @@
 ![Python](https://img.shields.io/badge/Tool-Python-3776AB?logo=python)
 ![Node.js](https://img.shields.io/badge/Tool-Node.js-339933?logo=node.js)
 ![SymPy](https://img.shields.io/badge/Tool-SymPy-3B5526?logo=python)
+![CLI Plot](https://img.shields.io/badge/Tool-CLI_Plot-FF6B6B?logo=chart-bar)
 ![Filesystem](https://img.shields.io/badge/Tool-Filesystem-4B275F)
 ![HTTP](https://img.shields.io/badge/Tool-HTTP-0099E5?logo=http)
 ![Curl](https://img.shields.io/badge/Tool-Curl-073551?logo=curl)
 ![Git](https://img.shields.io/badge/Tool-Git-F05032?logo=git)
 ![Docker](https://img.shields.io/badge/Tool-Docker-2496ED?logo=docker)
 ![Project Inspector](https://img.shields.io/badge/Tool-Project_Inspector-lightgrey)
+![Codebase Search](https://img.shields.io/badge/Tool-Codebase_Search-9B59B6)
+![File Search](https://img.shields.io/badge/Tool-File_Search-4CAF50)
+![Grep Search](https://img.shields.io/badge/Tool-Grep_Search-FF9800)
+![List Dir](https://img.shields.io/badge/Tool-List_Dir-607D8B)
 ![Kubectl](https://img.shields.io/badge/Tool-Kubectl-326CE5?logo=kubernetes)
 ![AWS CLI](https://img.shields.io/badge/Tool-AWS_CLI-232F3E?logo=amazon-aws)
 ![Jira](https://img.shields.io/badge/Tool-Jira-0052CC?logo=jira)
@@ -38,6 +43,7 @@
   - halo >= 0.0.31
   - mcp[cli] >= 1.9.2
   - openai >= 1.79.0
+  - plotext >= 5.3.2
   - python-dotenv >= 1.1.0
   - requests >= 2.32.3
   - sympy >= 1.14.0
@@ -174,7 +180,12 @@ On startup, Agent Loop will display any custom tools that have been loaded:
 | **python**            | Evaluate Python code in a sandboxed subprocess                  |
 | **node**              | Evaluate Node.js code in a sandboxed subprocess                 |
 | **sympy**             | Perform symbolic mathematics operations using SymPy             |
+| **cli_plot**          | Render advanced terminal charts and plots using plotext         |
 | **filesystem**        | Read, create, update, append, delete files with UTF-8 encoding  |
+| **list_dir**          | List the contents of a directory for quick file discovery       |
+| **codebase_search**   | Semantic code search for relevant code snippets in the project  |
+| **file_search**       | Fast fuzzy file search by filename or path fragment             |
+| **grep_search**       | Search for exact strings or regex patterns in files             |
 | **http**              | Make HTTP requests using HTTPie with easy JSON handling         |
 | **curl**              | Make HTTP requests using curl                                   |
 | **git**               | Run Git commands in the current repository                      |

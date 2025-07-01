@@ -378,6 +378,9 @@ def create_llm() -> callable:
 
     temperature = os.getenv("AI_TEMPERATURE", 0.7)
 
+    # make sure that temperature is a float
+    temperature = float(temperature)
+
     # Debug output
     print(f"🔧 [Config] AI_PROVIDER={preferred_provider}")
     print(f"🔧 [Config] AI_TEMPERATURE={temperature}")
