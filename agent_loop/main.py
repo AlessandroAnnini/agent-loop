@@ -35,9 +35,9 @@ import importlib.metadata
 
 # Load environment variables - local .env takes priority over config directory
 load_dotenv(
-    dotenv_path=os.path.expanduser("~/.config/agent-loop/.env"), override=False
+    dotenv_path=os.path.expanduser("~/.config/agent-loop/.env"), override=True
 )  # Config defaults first
-load_dotenv(dotenv_path=".env", override=True)  # Local .env overrides config
+load_dotenv(dotenv_path=".env", override=False)  # Local .env overrides config
 
 mcp_manager = MCPManager()
 
@@ -372,7 +372,7 @@ def create_llm() -> callable:
         )
 
     anthropic_key = os.getenv("ANTHROPIC_API_KEY")
-    anthropic_model = os.getenv("ANTHROPIC_MODEL", "claude-3-7-sonnet-latest")
+    anthropic_model = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-20250514")
     openai_key = os.getenv("OPENAI_API_KEY")
     openai_model = os.getenv("OPENAI_MODEL", "gpt-4o")
 
