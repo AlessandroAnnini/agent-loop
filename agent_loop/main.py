@@ -387,21 +387,23 @@ def create_llm() -> callable:
     print(f"🔧 [Config] ANTHROPIC_KEY={'✓' if anthropic_key else '✗'}")
     print(f"🔧 [Config] OPENAI_KEY={'✓' if openai_key else '✗'}")
 
-    if not anthropic_key and not openai_key:
-        raise EnvironmentError(
-            "No API keys found. Please set either ANTHROPIC_API_KEY or OPENAI_API_KEY environment variables."
-        )
-
-    if anthropic_key:
+    # Use the preferred provider and validate its API key
+    if preferred_provider == "anthropic":
+        if not anthropic_key:
+            raise EnvironmentError(
+                f"AI_PROVIDER is set to 'anthropic' but ANTHROPIC_API_KEY is not set. "
+                f"Please set ANTHROPIC_API_KEY or change AI_PROVIDER to 'openai'."
+            )
         print(f"✅ [Provider] Using: Anthropic")
         return create_anthropic_llm(anthropic_model, anthropic_key, temperature)
-    elif openai_key:
+    elif preferred_provider == "openai":
+        if not openai_key:
+            raise EnvironmentError(
+                f"AI_PROVIDER is set to 'openai' but OPENAI_API_KEY is not set. "
+                f"Please set OPENAI_API_KEY or change AI_PROVIDER to 'anthropic'."
+            )
         print(f"✅ [Provider] Using: OpenAI")
         return create_openai_llm(openai_model, openai_key, temperature)
-    else:
-        raise EnvironmentError(
-            "No API keys found. Please set either ANTHROPIC_API_KEY or OPENAI_API_KEY environment variables."
-        )
 
 
 async def agent_main() -> None:
